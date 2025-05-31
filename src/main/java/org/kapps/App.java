@@ -11,6 +11,8 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import java.io.IOException;
 import java.util.List;
 
+import static org.kapps.backup.FileType.OTHER;
+
 /**
  * Hello world!
  */
@@ -23,20 +25,27 @@ public class App {
             AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext("org.kapps");
 
             BackupOptions backupOptions = BackupOptions.builder()
-                    .source("R:\\20220108 sandhya phone")
-                    .target("R:\\backup testing")
+                    .source("D:\\backup\\oldphone")
+                    .target("D:\\backup\\backup-testing")
                     .replace(false)
                     .organize(true)
                     .compressVideos(true)
                     .maxAvgBitRate(1_500_000)
                     .ffmpeg("D:\\apps\\ffmpeg-7.1.1-essentials_build\\bin\\ffmpeg.exe")
                     .ffprobe("D:\\apps\\ffmpeg-7.1.1-essentials_build\\bin\\ffprobe.exe")
+                    .skipOthers(true)
                     .build();
 
             // Index
             List<IndexedFile> indexedFiles = FileIndexer.indexFiles(backupOptions.getSource());
             FileIndexer.logFileCountsByFileType(indexedFiles);
             FileIndexer.logFileCountsByMime(indexedFiles);
+
+            // Filter/Skip
+            if (backupOptions.isSkipOthers()) {
+                indexedFiles = indexedFiles.stream()
+                        .filter(file -> !file.getFileType().equals(OTHER)).toList();
+            }
 
             // Backup
             BackupService service = context.getBean(BackupService.class);

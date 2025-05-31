@@ -5,6 +5,7 @@ import org.kapps.backup.BackupOptions;
 import org.kapps.backup.BackupResult;
 import org.kapps.backup.VideoCompressor;
 import org.kapps.index.IndexedFile;
+import org.kapps.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
@@ -37,15 +38,15 @@ public class VideoBackupAgent implements BackupAgent {
 
         /// //////////////////////////
 
-        if (backupOptions.isOrganize()) {
-            return BackupResult.builder()
-                    .indexedFile(indexedFile)
-                    .agent(name())
-                    .backupAction(SKIP)
-                    .status(true)
-                    .message("Skipping for testing purpose")
-                    .build();
-        }
+//        if (backupOptions.isOrganize()) {
+//            return BackupResult.builder()
+//                    .indexedFile(indexedFile)
+//                    .agent(name())
+//                    .backupAction(SKIP)
+//                    .status(true)
+//                    .message("Skipping for testing purpose")
+//                    .build();
+//        }
 
         /// ///////////////////////////
 
@@ -99,28 +100,24 @@ public class VideoBackupAgent implements BackupAgent {
         if (backupOptions.isCompressVideos() && !videoCompressor.isAlreadyCompressed(inputFile, metadata)) {
             String error = videoCompressor.compressVideo(inputFile, targetPath.toFile());
             if (StringUtils.hasLength(error)) {
+                // delete file at the destination if was created
+                FileUtils.silentDelete(targetPath);
+                // so that copy will be attempted later
+            } else {
                 return BackupResult.builder()
                         .indexedFile(indexedFile)
                         .agent(name())
                         .backupAction(COMPRESS)
-                        .status(false)
-                        .message(error)
+                        .status(true)
+                        .message("Video compressed successfully")
                         .build();
             }
-            return BackupResult.builder()
-                    .indexedFile(indexedFile)
-                    .agent(name())
-                    .backupAction(COMPRESS)
-                    .status(true)
-                    .message("Video compressed successfully")
-                    .build();
         }
 
         // copy as it is
         try {
             logger.info("Copying the video as it is..");
             Files.copy(indexedFile.getPath(), targetDir.resolve(indexedFile.getRelativePath()));
-
             return BackupResult.builder()
                     .indexedFile(indexedFile)
                     .agent(name())

@@ -9,6 +9,7 @@ public class BackupOptions {
     private final long maxAvgBitRate;
     private final String ffmpeg;
     private final String ffprobe;
+    private final boolean skipOthers;
 
     private BackupOptions(Builder builder) {
         this.source = builder.source;
@@ -19,6 +20,7 @@ public class BackupOptions {
         this.ffmpeg = builder.ffmpeg;
         this.ffprobe = builder.ffprobe;
         this.organize = builder.organize;
+        this.skipOthers = builder.skipOthers;
     }
 
     public static Builder builder() {
@@ -34,6 +36,7 @@ public class BackupOptions {
         private String ffmpeg;
         private String ffprobe;
         private boolean organize;
+        private boolean skipOthers;
 
         public Builder source(String source) {
             this.source = source;
@@ -75,6 +78,11 @@ public class BackupOptions {
             return this;
         }
 
+        public Builder skipOthers(boolean skipOthers) {
+            this.skipOthers = skipOthers;
+            return this;
+        }
+
         public BackupOptions build() {
             return new BackupOptions(this);
         }
@@ -110,6 +118,10 @@ public class BackupOptions {
 
     public String getFfprobe() {
         return ffprobe;
+    }
+
+    public boolean isSkipOthers() {
+        return skipOthers;
     }
 }
 
