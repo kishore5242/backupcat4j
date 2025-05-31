@@ -4,6 +4,8 @@ public class BackupOptions {
     private final String source;
     private final String target;
     private final boolean replace;
+    private final boolean organize;
+    private final boolean compressVideos;
     private final long maxAvgBitRate;
     private final String ffmpeg;
     private final String ffprobe;
@@ -12,9 +14,11 @@ public class BackupOptions {
         this.source = builder.source;
         this.target = builder.target;
         this.replace = builder.replace;
+        this.compressVideos = builder.compressVideos;
         this.maxAvgBitRate = builder.maxAvgBitRate;
         this.ffmpeg = builder.ffmpeg;
         this.ffprobe = builder.ffprobe;
+        this.organize = builder.organize;
     }
 
     public static Builder builder() {
@@ -25,9 +29,11 @@ public class BackupOptions {
         private String source;
         private String target;
         private boolean replace;
+        private boolean compressVideos;
         private long maxAvgBitRate;
         private String ffmpeg;
         private String ffprobe;
+        private boolean organize;
 
         public Builder source(String source) {
             this.source = source;
@@ -41,6 +47,16 @@ public class BackupOptions {
 
         public Builder replace(boolean replace) {
             this.replace = replace;
+            return this;
+        }
+
+        public Builder compressVideos(boolean compressVideos) {
+            this.compressVideos = compressVideos;
+            return this;
+        }
+
+        public Builder organize(boolean organize) {
+            this.organize = organize;
             return this;
         }
 
@@ -72,8 +88,16 @@ public class BackupOptions {
         return target;
     }
 
+    public boolean isOrganize() {
+        return organize;
+    }
+
     public boolean isReplace() {
         return replace;
+    }
+
+    public boolean isCompressVideos() {
+        return compressVideos;
     }
 
     public long getMaxAvgBitRate() {

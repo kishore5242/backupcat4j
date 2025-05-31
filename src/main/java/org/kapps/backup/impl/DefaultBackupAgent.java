@@ -9,13 +9,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.kapps.backup.BackupAction.COPY;
-import static org.kapps.backup.BackupAction.SKIP;
+import static org.kapps.backup.BackupAction.*;
 
 @Component
 @Order(100)
@@ -33,7 +33,18 @@ public class DefaultBackupAgent implements BackupAgent {
         try {
             Path targetDir = Paths.get(backupOptions.getTarget());
             Path sourcePath = indexedFile.getPath();
-            Path targetPath = targetDir.resolve(indexedFile.getRelativePath());
+
+            // Calculate destination path
+            Path targetPath;
+            if (backupOptions.isOrganize()) {
+                targetPath = Paths.get(
+                        backupOptions.getTarget(),
+                        indexedFile.getFileType().name(),
+                        sourcePath.getFileName().toString()
+                );
+            } else {
+                targetPath = targetDir.resolve(indexedFile.getRelativePath());
+            }
 
             if (Files.exists(targetPath)) {
                 return BackupResult.builder()
@@ -42,6 +53,20 @@ public class DefaultBackupAgent implements BackupAgent {
                         .backupAction(SKIP)
                         .status(true)
                         .message("File already exists")
+                        .build();
+            }
+
+            // create target directories
+            File targetFile = targetPath.toFile();
+            File parentDir = targetFile.getParentFile();
+            if (!parentDir.exists() && !parentDir.mkdirs()) {
+                logger.error("Failed to create target directory: {}", parentDir.getAbsolutePath());
+                return BackupResult.builder()
+                        .indexedFile(indexedFile)
+                        .agent(name())
+                        .backupAction(BACKUP)
+                        .status(false)
+                        .message("Failed to create target directories")
                         .build();
             }
 

@@ -23,9 +23,11 @@ public class App {
             AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext("org.kapps");
 
             BackupOptions backupOptions = BackupOptions.builder()
-                    .source("R:\\20230307 paapu phone IMPORTANT")
-                    .target("R:\\20230307 phone paapu backup")
+                    .source("R:\\20220108 sandhya phone")
+                    .target("R:\\backup testing")
                     .replace(false)
+                    .organize(true)
+                    .compressVideos(true)
                     .maxAvgBitRate(1_500_000)
                     .ffmpeg("D:\\apps\\ffmpeg-7.1.1-essentials_build\\bin\\ffmpeg.exe")
                     .ffprobe("D:\\apps\\ffmpeg-7.1.1-essentials_build\\bin\\ffprobe.exe")
@@ -33,6 +35,7 @@ public class App {
 
             // Index
             List<IndexedFile> indexedFiles = FileIndexer.indexFiles(backupOptions.getSource());
+            FileIndexer.logFileCountsByFileType(indexedFiles);
             FileIndexer.logFileCountsByMime(indexedFiles);
 
             // Backup

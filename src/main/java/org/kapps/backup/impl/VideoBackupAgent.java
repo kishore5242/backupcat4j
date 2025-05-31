@@ -7,7 +7,6 @@ import org.kapps.backup.VideoCompressor;
 import org.kapps.index.IndexedFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -36,10 +35,50 @@ public class VideoBackupAgent implements BackupAgent {
     public BackupResult backup(IndexedFile indexedFile, BackupOptions backupOptions) {
         logger.info("Backing up video: {}", indexedFile.getPath());
 
+        /// //////////////////////////
+
+        if (backupOptions.isOrganize()) {
+            return BackupResult.builder()
+                    .indexedFile(indexedFile)
+                    .agent(name())
+                    .backupAction(SKIP)
+                    .status(true)
+                    .message("Skipping for testing purpose")
+                    .build();
+        }
+
+        /// ///////////////////////////
+
+
         Path sourcePath = indexedFile.getPath();
         File inputFile = sourcePath.toFile();
         Path targetDir = Paths.get(backupOptions.getTarget());
-        Path targetPath = targetDir.resolve(indexedFile.getRelativePath());
+
+        // Calculate destination path
+        Path targetPath;
+        if (backupOptions.isOrganize()) {
+            targetPath = Paths.get(
+                    backupOptions.getTarget(),
+                    indexedFile.getFileType().name(),
+                    sourcePath.getFileName().toString()
+            );
+        } else {
+            targetPath = targetDir.resolve(indexedFile.getRelativePath());
+        }
+
+        // create target directories
+        File targetFile = targetPath.toFile();
+        File parentDir = targetFile.getParentFile();
+        if (!parentDir.exists() && !parentDir.mkdirs()) {
+            logger.error("Failed to create target directory: {}", parentDir.getAbsolutePath());
+            return BackupResult.builder()
+                    .indexedFile(indexedFile)
+                    .agent(name())
+                    .backupAction(BACKUP)
+                    .status(false)
+                    .message("Failed to create target directories")
+                    .build();
+        }
 
         if (Files.exists(targetPath)) {
             logger.info("Skipping as the file already exists");
@@ -56,8 +95,8 @@ public class VideoBackupAgent implements BackupAgent {
 
         Map<String, String> metadata = videoCompressor.probeVideo(inputFile);
 
-        // compress to destination
-        if (!videoCompressor.isAlreadyCompressed(inputFile, metadata)) {
+        // compress to destination if requested
+        if (backupOptions.isCompressVideos() && !videoCompressor.isAlreadyCompressed(inputFile, metadata)) {
             String error = videoCompressor.compressVideo(inputFile, targetPath.toFile());
             if (StringUtils.hasLength(error)) {
                 return BackupResult.builder()

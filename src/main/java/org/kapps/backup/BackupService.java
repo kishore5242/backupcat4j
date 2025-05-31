@@ -32,19 +32,9 @@ public class BackupService {
 
     public void backupFiles(List<IndexedFile> indexedFiles, BackupOptions backupOptions) {
         Stopwatch sw = Stopwatch.createStarted();
-        Path targetDir = Paths.get(backupOptions.getTarget());
         List<BackupResult> backupResults = new ArrayList<>();
         for (IndexedFile indexedFile : indexedFiles) {
             try {
-                // Ensure target directories exist
-                Path relativePath = Path.of(indexedFile.getRelativePath());
-                Path targetPath = targetDir.resolve(relativePath);
-                File targetFile = targetPath.toFile();
-                File parentDir = targetFile.getParentFile();
-                if (!parentDir.exists() && !parentDir.mkdirs()) {
-                    logger.error("Failed to create target directory: {}", parentDir.getAbsolutePath());
-                    return;
-                }
                 BackupAgent agent = agentFactory.getAgent(indexedFile.getMimeType());
                 BackupResult backupResult = agent.backup(indexedFile, backupOptions);
                 backupResults.add(backupResult);

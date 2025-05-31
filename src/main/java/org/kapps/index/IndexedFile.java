@@ -1,5 +1,8 @@
 package org.kapps.index;
 
+import org.kapps.backup.FileType;
+import org.kapps.utils.OrganizerUtils;
+
 import java.nio.file.Path;
 import java.util.Objects;
 
@@ -10,12 +13,16 @@ public class IndexedFile implements Comparable<IndexedFile> {
     private final String mimeType;
     private final String relativePath;
 
+    // calculated
+    private final FileType fileType;
+
     private IndexedFile(Builder builder) {
         this.size = builder.size;
         this.lastModified = builder.lastModified;
         this.path = builder.path;
         this.mimeType = builder.mimeType;
         this.relativePath = builder.relativePath;
+        this.fileType = OrganizerUtils.parse(builder.mimeType, builder.path);
     }
 
     // Getters
@@ -37,6 +44,10 @@ public class IndexedFile implements Comparable<IndexedFile> {
 
     public String getRelativePath() {
         return relativePath;
+    }
+
+    public FileType getFileType() {
+        return fileType;
     }
 
     @Override
