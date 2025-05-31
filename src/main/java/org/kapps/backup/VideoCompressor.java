@@ -2,7 +2,6 @@ package org.kapps.backup;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -12,17 +11,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-@Service
 public class VideoCompressor {
 
     private static final Logger logger = LoggerFactory.getLogger(VideoCompressor.class);
 
-    private static String ffmpeg = "D:\\apps\\ffmpeg-7.1.1-essentials_build\\bin\\ffmpeg.exe";
-    private static String ffprobe = "D:\\apps\\ffmpeg-7.1.1-essentials_build\\bin\\ffprobe.exe";
 
     private static final Set<String> TARGET_CODECS = Set.of("h264", "hevc", "vp9");
-    private static final long MAX_AVG_BITRATE = 1_500_000;
 
+    private final BackupOptions backupOptions;
+
+    public VideoCompressor(BackupOptions backupOptions) {
+        this.backupOptions = backupOptions;
+    }
 
     public boolean isAlreadyCompressed(File inputFile, Map<String, String> metadata) {
         try {
@@ -38,7 +38,7 @@ public class VideoCompressor {
                     codec, durationSeconds, fileSizeBytes, avgBitrate);
 
             boolean codecOk = TARGET_CODECS.contains(codec);
-            boolean bitrateOk = avgBitrate > 0 && avgBitrate <= MAX_AVG_BITRATE;
+            boolean bitrateOk = avgBitrate > 0 && avgBitrate <= backupOptions.getMaxAvgBitRate();
 
             return codecOk && bitrateOk;
 
@@ -50,7 +50,7 @@ public class VideoCompressor {
 
     public Map<String, String> probeVideo(File inputFile) {
         ProcessBuilder pb = new ProcessBuilder(
-                ffprobe,
+                backupOptions.getFfprobe(),
                 "-v", "error",
                 "-select_streams", "v:0",
                 "-show_entries", "stream=codec_name",
@@ -81,7 +81,7 @@ public class VideoCompressor {
     public String compressVideo(File inputFile, File outputFile) {
         logger.info("compressing video...");
         String[] command = {
-                ffmpeg,
+                backupOptions.getFfmpeg(),
                 "-y",  // overwrite without prompt
                 "-i", inputFile.getAbsolutePath(),
                 "-vcodec", "libx264",

@@ -1,6 +1,7 @@
 package org.kapps.backup.impl;
 
 import org.kapps.backup.BackupAgent;
+import org.kapps.backup.BackupOptions;
 import org.kapps.backup.BackupResult;
 import org.kapps.backup.VideoCompressor;
 import org.kapps.index.IndexedFile;
@@ -15,10 +16,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 
-import static org.kapps.backup.BackupAction.COMPRESS;
-import static org.kapps.backup.BackupAction.COPY;
+import static org.kapps.backup.BackupAction.*;
 
 @Component
 @Order(10)
@@ -26,19 +27,32 @@ public class VideoBackupAgent implements BackupAgent {
 
     private static final Logger logger = LoggerFactory.getLogger(VideoBackupAgent.class);
 
-    @Autowired
-    private VideoCompressor videoCompressor;
-
     @Override
     public String name() {
         return "Video backup agent";
     }
 
     @Override
-    public BackupResult backup(IndexedFile indexedFile, Path targetRoot) {
+    public BackupResult backup(IndexedFile indexedFile, BackupOptions backupOptions) {
         logger.info("Backing up video: {}", indexedFile.getPath());
-        Path targetPath = targetRoot.resolve(indexedFile.getRelativePath());
-        File inputFile = indexedFile.getPath().toFile();
+
+        Path sourcePath = indexedFile.getPath();
+        File inputFile = sourcePath.toFile();
+        Path targetDir = Paths.get(backupOptions.getTarget());
+        Path targetPath = targetDir.resolve(indexedFile.getRelativePath());
+
+        if (Files.exists(targetPath)) {
+            logger.info("Skipping as the file already exists");
+            return BackupResult.builder()
+                    .indexedFile(indexedFile)
+                    .agent(name())
+                    .backupAction(SKIP)
+                    .status(true)
+                    .message("File already exists")
+                    .build();
+        }
+
+        VideoCompressor videoCompressor = new VideoCompressor(backupOptions);
 
         Map<String, String> metadata = videoCompressor.probeVideo(inputFile);
 
@@ -46,19 +60,44 @@ public class VideoBackupAgent implements BackupAgent {
         if (!videoCompressor.isAlreadyCompressed(inputFile, metadata)) {
             String error = videoCompressor.compressVideo(inputFile, targetPath.toFile());
             if (StringUtils.hasLength(error)) {
-                return new BackupResult(indexedFile, name(), COMPRESS, error);
+                return BackupResult.builder()
+                        .indexedFile(indexedFile)
+                        .agent(name())
+                        .backupAction(COMPRESS)
+                        .status(false)
+                        .message(error)
+                        .build();
             }
-            return new BackupResult(indexedFile, name(), COMPRESS);
+            return BackupResult.builder()
+                    .indexedFile(indexedFile)
+                    .agent(name())
+                    .backupAction(COMPRESS)
+                    .status(true)
+                    .message("Video compressed successfully")
+                    .build();
         }
 
         // copy as it is
         try {
             logger.info("Copying the video as it is..");
-            Files.copy(indexedFile.getPath(), targetRoot.resolve(indexedFile.getRelativePath()));
-            return new BackupResult(indexedFile, name(), COPY);
+            Files.copy(indexedFile.getPath(), targetDir.resolve(indexedFile.getRelativePath()));
+
+            return BackupResult.builder()
+                    .indexedFile(indexedFile)
+                    .agent(name())
+                    .backupAction(COPY)
+                    .status(true)
+                    .message("Copied successfully")
+                    .build();
         } catch (IOException e) {
             logger.error("Failed to copy video", e);
-            return new BackupResult(indexedFile, name(), COPY, e.getMessage());
+            return BackupResult.builder()
+                    .indexedFile(indexedFile)
+                    .agent(name())
+                    .backupAction(COPY)
+                    .status(false)
+                    .message(e.getMessage())
+                    .build();
         }
     }
 

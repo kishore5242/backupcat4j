@@ -7,7 +7,7 @@ import java.nio.file.Path;
 public interface BackupAgent {
     String name();
 
-    BackupResult backup(IndexedFile indexedFile, Path targetRoot);
+    BackupResult backup(IndexedFile indexedFile, BackupOptions backupOptions);
 
     boolean supports(String mimeType);
 }

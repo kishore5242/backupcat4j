@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,14 +30,15 @@ public class BackupService {
         this.agentFactory = agentFactory;
     }
 
-    public void backupFiles(List<IndexedFile> indexedFiles, Path targetRoot) {
+    public void backupFiles(List<IndexedFile> indexedFiles, BackupOptions backupOptions) {
         Stopwatch sw = Stopwatch.createStarted();
+        Path targetDir = Paths.get(backupOptions.getTarget());
         List<BackupResult> backupResults = new ArrayList<>();
         for (IndexedFile indexedFile : indexedFiles) {
             try {
                 // Ensure target directories exist
                 Path relativePath = Path.of(indexedFile.getRelativePath());
-                Path targetPath = targetRoot.resolve(relativePath);
+                Path targetPath = targetDir.resolve(relativePath);
                 File targetFile = targetPath.toFile();
                 File parentDir = targetFile.getParentFile();
                 if (!parentDir.exists() && !parentDir.mkdirs()) {
@@ -44,11 +46,17 @@ public class BackupService {
                     return;
                 }
                 BackupAgent agent = agentFactory.getAgent(indexedFile.getMimeType());
-                BackupResult backupResult = agent.backup(indexedFile, targetRoot);
+                BackupResult backupResult = agent.backup(indexedFile, backupOptions);
                 backupResults.add(backupResult);
             } catch (Exception e) {
                 logger.error("Failed to back up: {}", indexedFile.getPath(), e);
-                backupResults.add(new BackupResult(indexedFile, "No agent", BACKUP, e.getMessage()));
+                backupResults.add(BackupResult.builder()
+                        .indexedFile(indexedFile)
+                        .agent("No agent")
+                        .backupAction(BACKUP)
+                        .status(false)
+                        .message(e.getMessage())
+                        .build());
             }
         }
         // print results
@@ -81,7 +89,7 @@ public class BackupService {
         backupResults.forEach(result -> {
             if (!result.getStatus()) {
                 logger.info("Failed to {} file {} with reason: {}",
-                        result.getBackupAction(), result.getIndexedFile().getRelativePath(), result.getError());
+                        result.getBackupAction(), result.getIndexedFile().getRelativePath(), result.getMessage());
             }
         });
 

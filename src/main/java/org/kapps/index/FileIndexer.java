@@ -7,8 +7,12 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -16,8 +20,9 @@ public class FileIndexer {
 
     private static final Logger logger = LoggerFactory.getLogger(FileIndexer.class);
 
-    public static List<IndexedFile> indexFiles(Path sourceDir) throws IOException {
-        logger.info("Indexing folder {}", sourceDir);
+    public static List<IndexedFile> indexFiles(String source) throws IOException {
+        logger.info("Indexing folder {}", source);
+        Path sourceDir = Paths.get(source);
         List<IndexedFile> indexedFiles = new ArrayList<>();
         try (Stream<Path> stream = Files.walk(sourceDir)) {
             stream.filter(Files::isRegularFile)
