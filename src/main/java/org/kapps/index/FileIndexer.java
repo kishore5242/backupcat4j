@@ -1,6 +1,8 @@
 package org.kapps.index;
 
+import org.kapps.backup.BackupOptions;
 import org.kapps.backup.FileType;
+import org.kapps.backup.OrganizeMode;
 import org.kapps.utils.MimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,10 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -22,18 +21,24 @@ public class FileIndexer {
 
     private static final Logger logger = LoggerFactory.getLogger(FileIndexer.class);
 
-    public static List<IndexedFile> indexFiles(String source) throws IOException {
-        logger.info("Indexing folder {}", source);
-        Path sourceDir = Paths.get(source);
+    public static List<IndexedFile> indexFiles(BackupOptions backupOptions) throws IOException {
         List<IndexedFile> indexedFiles = new ArrayList<>();
 
+        String source = backupOptions.getSource();
+        Path sourceDir = Paths.get(source);
+        logger.info("Indexing folder {}", source);
+
+        // get all file paths
         List<Path> files;
         try (Stream<Path> stream = Files.walk(sourceDir)) {
             files = stream.filter(Files::isRegularFile).toList();
         }
         int total = files.size();
+
         logger.info("Found {} files", total);
         AtomicInteger i = new AtomicInteger();
+        Map<Path, String> suffixes = new HashMap<>(); // path and their suffix - to handle clashes
+        boolean skipSuffix = backupOptions.getOrganize().equals(OrganizeMode.NONE);
         for (Path path : files) {
             int percentage = (i.get() * 100) / total;
             System.out.print("\rIndexing... [ " + percentage + "% ]");
@@ -44,12 +49,27 @@ public class FileIndexer {
                 String key = sourceDir.relativize(path).toString();
                 String mimeType = MimeUtils.detectMimeType(path);
 
+                // Handle clashes and suffix
+                String thisFileSuffix = "";
+                if (!skipSuffix) {
+                    String existing = suffixes.get(path.getFileName());
+                    // handle clash
+                    if (existing != null) {
+                        thisFileSuffix = existing + "_clash";
+                        suffixes.put(path.getFileName(), thisFileSuffix);
+                    } else {
+                        // non-null so that clash can be detected
+                        suffixes.put(path.getFileName(), thisFileSuffix);
+                    }
+                }
+
                 IndexedFile indexedFile = new IndexedFile.Builder()
                         .path(path)
                         .mimeType(mimeType)
                         .relativePath(key)
                         .size(size)
                         .lastModified(lastModified)
+                        .suffix(thisFileSuffix)
                         .build();
 
                 indexedFiles.add(indexedFile);

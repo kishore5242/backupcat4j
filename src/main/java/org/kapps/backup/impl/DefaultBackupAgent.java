@@ -4,6 +4,7 @@ import org.kapps.backup.BackupAgent;
 import org.kapps.backup.BackupOptions;
 import org.kapps.backup.BackupResult;
 import org.kapps.index.IndexedFile;
+import org.kapps.utils.BackupUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
@@ -13,7 +14,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static org.kapps.backup.BackupAction.*;
 
@@ -30,26 +30,16 @@ public class DefaultBackupAgent implements BackupAgent {
 
     @Override
     public BackupResult backup(IndexedFile indexedFile, BackupOptions backupOptions) {
+        BackupResult.Builder resultBuilder = BackupResult.builder()
+                .indexedFile(indexedFile)
+                .agent(name());
         try {
-            Path targetDir = Paths.get(backupOptions.getTarget());
-            Path sourcePath = indexedFile.getPath();
 
-            // Calculate destination path
-            Path targetPath;
-            if (backupOptions.isOrganize()) {
-                targetPath = Paths.get(
-                        backupOptions.getTarget(),
-                        indexedFile.getFileType().name(),
-                        sourcePath.getFileName().toString()
-                );
-            } else {
-                targetPath = targetDir.resolve(indexedFile.getRelativePath());
-            }
+            // calculate the destination path
+            Path targetPath = BackupUtils.getDefaultTargetPath(indexedFile, backupOptions);
 
             if (Files.exists(targetPath)) {
-                return BackupResult.builder()
-                        .indexedFile(indexedFile)
-                        .agent(name())
+                return resultBuilder
                         .backupAction(SKIP)
                         .status(true)
                         .message("File already exists")
@@ -61,9 +51,7 @@ public class DefaultBackupAgent implements BackupAgent {
             File parentDir = targetFile.getParentFile();
             if (!parentDir.exists() && !parentDir.mkdirs()) {
                 logger.error("Failed to create target directory: {}", parentDir.getAbsolutePath());
-                return BackupResult.builder()
-                        .indexedFile(indexedFile)
-                        .agent(name())
+                return resultBuilder
                         .backupAction(BACKUP)
                         .status(false)
                         .message("Failed to create target directories")
@@ -71,10 +59,8 @@ public class DefaultBackupAgent implements BackupAgent {
             }
 
             logger.info("Backing up file: {}", indexedFile.getPath());
-            Files.copy(sourcePath, targetPath);
-            return BackupResult.builder()
-                    .indexedFile(indexedFile)
-                    .agent(name())
+            Files.copy(indexedFile.getPath(), targetPath);
+            return resultBuilder
                     .backupAction(COPY)
                     .status(true)
                     .message("File copied successfully")
@@ -82,9 +68,7 @@ public class DefaultBackupAgent implements BackupAgent {
 
         } catch (IOException e) {
             logger.error("Failed to copy file", e);
-            return BackupResult.builder()
-                    .indexedFile(indexedFile)
-                    .agent(name())
+            return resultBuilder
                     .backupAction(COPY)
                     .status(false)
                     .message(e.getMessage())

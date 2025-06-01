@@ -5,9 +5,11 @@ import org.kapps.backup.BackupOptions;
 import org.kapps.backup.BackupResult;
 import org.kapps.backup.VideoCompressor;
 import org.kapps.index.IndexedFile;
+import org.kapps.utils.BackupUtils;
 import org.kapps.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -16,7 +18,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Map;
 
 import static org.kapps.backup.BackupAction.*;
@@ -27,6 +28,9 @@ public class VideoBackupAgent implements BackupAgent {
 
     private static final Logger logger = LoggerFactory.getLogger(VideoBackupAgent.class);
 
+    @Autowired
+    private VideoCompressor videoCompressor;
+
     @Override
     public String name() {
         return "Video backup agent";
@@ -36,30 +40,20 @@ public class VideoBackupAgent implements BackupAgent {
     public BackupResult backup(IndexedFile indexedFile, BackupOptions backupOptions) {
         logger.info("Backing up video: {}", indexedFile.getPath());
 
-        Path sourcePath = indexedFile.getPath();
-        File inputFile = sourcePath.toFile();
-        Path targetDir = Paths.get(backupOptions.getTarget());
+        BackupResult.Builder resultBuilder = BackupResult.builder()
+                .indexedFile(indexedFile)
+                .agent(name());
 
-        // Calculate destination path
-        Path targetPath;
-        if (backupOptions.isOrganize()) {
-            targetPath = Paths.get(
-                    backupOptions.getTarget(),
-                    indexedFile.getFileType().name(),
-                    sourcePath.getFileName().toString()
-            );
-        } else {
-            targetPath = targetDir.resolve(indexedFile.getRelativePath());
-        }
+        // calculate the destination path
+        Path targetPath = BackupUtils.getDefaultTargetPath(indexedFile, backupOptions);
+        File sourceFile = indexedFile.getPath().toFile();
 
         // create target directories
         File targetFile = targetPath.toFile();
         File parentDir = targetFile.getParentFile();
         if (!parentDir.exists() && !parentDir.mkdirs()) {
             logger.error("Failed to create target directory: {}", parentDir.getAbsolutePath());
-            return BackupResult.builder()
-                    .indexedFile(indexedFile)
-                    .agent(name())
+            return resultBuilder
                     .backupAction(BACKUP)
                     .status(false)
                     .message("Failed to create target directories")
@@ -68,9 +62,7 @@ public class VideoBackupAgent implements BackupAgent {
 
         if (Files.exists(targetPath) && !backupOptions.isReplace()) {
             logger.info("Skipping as the file already exists");
-            return BackupResult.builder()
-                    .indexedFile(indexedFile)
-                    .agent(name())
+            return resultBuilder
                     .backupAction(SKIP)
                     .status(true)
                     .message("File already exists")
@@ -80,21 +72,20 @@ public class VideoBackupAgent implements BackupAgent {
             FileUtils.silentDelete(targetPath);
         }
 
-        VideoCompressor videoCompressor = new VideoCompressor(backupOptions);
+        Map<String, String> metadata = videoCompressor.probeVideo(sourceFile, backupOptions);
 
-        Map<String, String> metadata = videoCompressor.probeVideo(inputFile);
-
-        // compress to destination if requested
-        if (backupOptions.isCompressVideos() && !videoCompressor.isAlreadyCompressed(inputFile, metadata)) {
-            String error = videoCompressor.compressVideo(inputFile, targetPath.toFile(), metadata);
+        // check if compression is required
+        if (backupOptions.isCompressVideos() &&
+                !videoCompressor.isAlreadyCompressed(sourceFile, metadata, backupOptions)
+        ) {
+            // compress
+            String error = videoCompressor.compressVideo(sourceFile, targetPath.toFile(), metadata, backupOptions);
             if (StringUtils.hasLength(error)) {
                 // delete file at the destination if was created
                 FileUtils.silentDelete(targetPath);
-                // so that copy will be attempted later
+                // so that copy will be attempted next
             } else {
-                return BackupResult.builder()
-                        .indexedFile(indexedFile)
-                        .agent(name())
+                return resultBuilder
                         .backupAction(COMPRESS)
                         .status(true)
                         .message("Video compressed successfully")
@@ -106,18 +97,14 @@ public class VideoBackupAgent implements BackupAgent {
         try {
             logger.info("Copying the video as it is..");
             Files.copy(indexedFile.getPath(), targetPath);
-            return BackupResult.builder()
-                    .indexedFile(indexedFile)
-                    .agent(name())
+            return resultBuilder
                     .backupAction(COPY)
                     .status(true)
                     .message("Copied successfully")
                     .build();
         } catch (IOException e) {
             logger.error("Failed to copy video", e);
-            return BackupResult.builder()
-                    .indexedFile(indexedFile)
-                    .agent(name())
+            return resultBuilder
                     .backupAction(COPY)
                     .status(false)
                     .message(e.getMessage())

@@ -2,6 +2,7 @@ package org.kapps;
 
 import org.kapps.backup.BackupOptions;
 import org.kapps.backup.BackupService;
+import org.kapps.backup.OrganizeMode;
 import org.kapps.index.FileIndexer;
 import org.kapps.index.IndexedFile;
 import org.slf4j.Logger;
@@ -25,10 +26,10 @@ public class App {
             AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext("org.kapps");
 
             BackupOptions backupOptions = BackupOptions.builder()
-                    .source("D:\\backup\\from")
+                    .source("Q:\\4_Challenges\\samarpita-3")
                     .target("D:\\backup\\to")
                     .replace(true)
-                    .organize(false)
+                    .organize(OrganizeMode.IGNORING_FIRST_FOLDER)
                     .compressVideos(true)
                     .maxAvgBitRate(1_000_000)
                     .ffmpeg("D:\\apps\\ffmpeg-7.1.1-essentials_build\\bin\\ffmpeg.exe")
@@ -36,20 +37,9 @@ public class App {
                     .skipOthers(true)
                     .build();
 
-            // Index
-            List<IndexedFile> indexedFiles = FileIndexer.indexFiles(backupOptions.getSource());
-            FileIndexer.logFileCountsByFileType(indexedFiles);
-            FileIndexer.logFileCountsByMime(indexedFiles);
-
-            // Filter/Skip
-            if (backupOptions.isSkipOthers()) {
-                indexedFiles = indexedFiles.stream()
-                        .filter(file -> !file.getFileType().equals(OTHER)).toList();
-            }
-
             // Backup
             BackupService service = context.getBean(BackupService.class);
-            service.backupFiles(indexedFiles, backupOptions);
+            service.backupFiles(backupOptions);
 
         } catch (IOException e) {
             logger.error("Process failed", e);

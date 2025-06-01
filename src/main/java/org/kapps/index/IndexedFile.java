@@ -12,6 +12,7 @@ public class IndexedFile implements Comparable<IndexedFile> {
     private final Path path;
     private final String mimeType;
     private final String relativePath;
+    private final String suffix;
 
     // calculated
     private final FileType fileType;
@@ -23,6 +24,7 @@ public class IndexedFile implements Comparable<IndexedFile> {
         this.mimeType = builder.mimeType;
         this.relativePath = builder.relativePath;
         this.fileType = OrganizerUtils.parse(builder.mimeType, builder.path);
+        this.suffix = builder.suffix;
     }
 
     // Getters
@@ -50,6 +52,10 @@ public class IndexedFile implements Comparable<IndexedFile> {
         return fileType;
     }
 
+    public String getSuffix() {
+        return suffix;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
@@ -74,6 +80,7 @@ public class IndexedFile implements Comparable<IndexedFile> {
         private Path path;
         private String mimeType;
         private String relativePath;
+        private String suffix = "";
 
         public Builder path(Path path) {
             this.path = path;
@@ -97,6 +104,11 @@ public class IndexedFile implements Comparable<IndexedFile> {
 
         public Builder relativePath(String relativePath) {
             this.relativePath = relativePath;
+            return this;
+        }
+
+        public Builder suffix(String suffix) {
+            this.suffix = suffix;
             return this;
         }
 

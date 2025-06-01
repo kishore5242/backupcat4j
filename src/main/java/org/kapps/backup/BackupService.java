@@ -1,27 +1,27 @@
 package org.kapps.backup;
 
 import com.google.common.base.Stopwatch;
+import org.kapps.index.FileIndexer;
 import org.kapps.index.IndexedFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
-import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.kapps.backup.BackupAction.BACKUP;
+import static org.kapps.backup.FileType.OTHER;
 
 @Service
 public class BackupService {
 
     private static final Logger logger = LoggerFactory.getLogger(BackupService.class);
-
 
     private final BackupAgentFactory agentFactory;
 
@@ -30,9 +30,14 @@ public class BackupService {
         this.agentFactory = agentFactory;
     }
 
-    public void backupFiles(List<IndexedFile> indexedFiles, BackupOptions backupOptions) {
+    public void backupFiles(BackupOptions backupOptions) throws IOException {
         Stopwatch sw = Stopwatch.createStarted();
         List<BackupResult> backupResults = new ArrayList<>();
+
+        // Index folders
+        List<IndexedFile> indexedFiles = index(backupOptions);
+
+        // Backup
         for (IndexedFile indexedFile : indexedFiles) {
             try {
                 BackupAgent agent = agentFactory.getAgent(indexedFile.getMimeType());
@@ -53,6 +58,19 @@ public class BackupService {
         logBackupResults(indexedFiles, backupResults, sw);
     }
 
+    private List<IndexedFile> index(BackupOptions backupOptions) throws IOException {
+        List<IndexedFile> indexedFiles = FileIndexer.indexFiles(backupOptions);
+        FileIndexer.logFileCountsByFileType(indexedFiles);
+        FileIndexer.logFileCountsByMime(indexedFiles);
+
+        // Filter/Skip
+        if (backupOptions.isSkipOthers()) {
+            indexedFiles = indexedFiles.stream()
+                    .filter(file -> !file.getFileType().equals(OTHER)).toList();
+        }
+        return indexedFiles;
+    }
+
     private void logBackupResults(List<IndexedFile> indexedFiles, List<BackupResult> backupResults, Stopwatch sw) {
         logger.info("-------------------------------------------RESULT-----------------------------------------------");
 
@@ -63,6 +81,11 @@ public class BackupService {
             long success = results.stream().filter(BackupResult::getStatus).count();
             logger.info("{}: {}/{}", action, success, results.size());
         });
+
+        // clashes
+        logger.info("");
+        long clashes = indexedFiles.stream().filter(i -> StringUtils.hasLength(i.getSuffix())).count();
+        logger.info("Clashes handles: {}", clashes);
 
         // agents
         logger.info("");

@@ -4,7 +4,7 @@ public class BackupOptions {
     private final String source;
     private final String target;
     private final boolean replace;
-    private final boolean organize;
+    private final OrganizeMode organize;
     private final boolean compressVideos;
     private final long maxAvgBitRate;
     private final String ffmpeg;
@@ -19,8 +19,8 @@ public class BackupOptions {
         this.maxAvgBitRate = builder.maxAvgBitRate;
         this.ffmpeg = builder.ffmpeg;
         this.ffprobe = builder.ffprobe;
-        this.organize = builder.organize;
         this.skipOthers = builder.skipOthers;
+        this.organize = builder.organize;
     }
 
     public static Builder builder() {
@@ -31,11 +31,11 @@ public class BackupOptions {
         private String source;
         private String target;
         private boolean replace;
+        private OrganizeMode organize;
         private boolean compressVideos;
         private long maxAvgBitRate;
         private String ffmpeg;
         private String ffprobe;
-        private boolean organize;
         private boolean skipOthers;
 
         public Builder source(String source) {
@@ -55,11 +55,6 @@ public class BackupOptions {
 
         public Builder compressVideos(boolean compressVideos) {
             this.compressVideos = compressVideos;
-            return this;
-        }
-
-        public Builder organize(boolean organize) {
-            this.organize = organize;
             return this;
         }
 
@@ -83,6 +78,11 @@ public class BackupOptions {
             return this;
         }
 
+        public Builder organize(OrganizeMode organizeMode) {
+            this.organize = organizeMode;
+            return this;
+        }
+
         public BackupOptions build() {
             return new BackupOptions(this);
         }
@@ -94,10 +94,6 @@ public class BackupOptions {
 
     public String getTarget() {
         return target;
-    }
-
-    public boolean isOrganize() {
-        return organize;
     }
 
     public boolean isReplace() {
@@ -122,6 +118,10 @@ public class BackupOptions {
 
     public boolean isSkipOthers() {
         return skipOthers;
+    }
+
+    public OrganizeMode getOrganize() {
+        return organize;
     }
 }
 

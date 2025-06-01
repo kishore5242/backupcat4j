@@ -2,6 +2,7 @@ package org.kapps.backup;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -13,20 +14,14 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Component
 public class VideoCompressor {
 
     private static final Logger logger = LoggerFactory.getLogger(VideoCompressor.class);
 
-
     private static final Set<String> TARGET_CODECS = Set.of("h264", "hevc", "vp9");
 
-    private final BackupOptions backupOptions;
-
-    public VideoCompressor(BackupOptions backupOptions) {
-        this.backupOptions = backupOptions;
-    }
-
-    public boolean isAlreadyCompressed(File inputFile, Map<String, String> metadata) {
+    public boolean isAlreadyCompressed(File inputFile, Map<String, String> metadata, BackupOptions backupOptions) {
         try {
             String codec = metadata.get("codec_name");
             String durationStr = metadata.get("duration");
@@ -50,7 +45,7 @@ public class VideoCompressor {
         }
     }
 
-    public Map<String, String> probeVideo(File inputFile) {
+    public Map<String, String> probeVideo(File inputFile, BackupOptions backupOptions) {
         ProcessBuilder pb = new ProcessBuilder(
                 backupOptions.getFfprobe(),
                 "-v", "error",
@@ -80,7 +75,7 @@ public class VideoCompressor {
         return result;
     }
 
-    public String compressVideo(File inputFile, File outputFile, Map<String, String> metadata) {
+    public String compressVideo(File inputFile, File outputFile, Map<String, String> metadata, BackupOptions backupOptions) {
         logger.info("compressing video...");
 
         String durationStr = metadata.get("duration");
