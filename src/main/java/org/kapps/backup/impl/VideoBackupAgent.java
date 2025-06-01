@@ -36,21 +36,6 @@ public class VideoBackupAgent implements BackupAgent {
     public BackupResult backup(IndexedFile indexedFile, BackupOptions backupOptions) {
         logger.info("Backing up video: {}", indexedFile.getPath());
 
-        /// //////////////////////////
-
-//        if (backupOptions.isOrganize()) {
-//            return BackupResult.builder()
-//                    .indexedFile(indexedFile)
-//                    .agent(name())
-//                    .backupAction(SKIP)
-//                    .status(true)
-//                    .message("Skipping for testing purpose")
-//                    .build();
-//        }
-
-        /// ///////////////////////////
-
-
         Path sourcePath = indexedFile.getPath();
         File inputFile = sourcePath.toFile();
         Path targetDir = Paths.get(backupOptions.getTarget());
@@ -81,7 +66,7 @@ public class VideoBackupAgent implements BackupAgent {
                     .build();
         }
 
-        if (Files.exists(targetPath)) {
+        if (Files.exists(targetPath) && !backupOptions.isReplace()) {
             logger.info("Skipping as the file already exists");
             return BackupResult.builder()
                     .indexedFile(indexedFile)
@@ -90,6 +75,9 @@ public class VideoBackupAgent implements BackupAgent {
                     .status(true)
                     .message("File already exists")
                     .build();
+        } else if (backupOptions.isReplace()) {
+            // First delete the target file
+            FileUtils.silentDelete(targetPath);
         }
 
         VideoCompressor videoCompressor = new VideoCompressor(backupOptions);
@@ -98,7 +86,7 @@ public class VideoBackupAgent implements BackupAgent {
 
         // compress to destination if requested
         if (backupOptions.isCompressVideos() && !videoCompressor.isAlreadyCompressed(inputFile, metadata)) {
-            String error = videoCompressor.compressVideo(inputFile, targetPath.toFile());
+            String error = videoCompressor.compressVideo(inputFile, targetPath.toFile(), metadata);
             if (StringUtils.hasLength(error)) {
                 // delete file at the destination if was created
                 FileUtils.silentDelete(targetPath);
@@ -117,7 +105,7 @@ public class VideoBackupAgent implements BackupAgent {
         // copy as it is
         try {
             logger.info("Copying the video as it is..");
-            Files.copy(indexedFile.getPath(), targetDir.resolve(indexedFile.getRelativePath()));
+            Files.copy(indexedFile.getPath(), targetPath);
             return BackupResult.builder()
                     .indexedFile(indexedFile)
                     .agent(name())

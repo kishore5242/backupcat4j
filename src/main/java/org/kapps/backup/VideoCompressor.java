@@ -10,6 +10,8 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class VideoCompressor {
 
@@ -78,14 +80,18 @@ public class VideoCompressor {
         return result;
     }
 
-    public String compressVideo(File inputFile, File outputFile) {
+    public String compressVideo(File inputFile, File outputFile, Map<String, String> metadata) {
         logger.info("compressing video...");
+
+        String durationStr = metadata.get("duration");
+        long totalDuration = (durationStr != null) ? Math.round(Double.parseDouble(durationStr)) : 0;
+
         String[] command = {
                 backupOptions.getFfmpeg(),
                 "-y",  // overwrite without prompt
                 "-i", inputFile.getAbsolutePath(),
                 "-vcodec", "libx264",
-                "-crf", "28",             // reasonable compression
+                "-crf", "30",             // reasonable compression
                 "-preset", "ultrafast",   // fast
                 "-acodec", "copy",        // skip audio encoding
                 outputFile.getAbsolutePath()
@@ -100,9 +106,31 @@ public class VideoCompressor {
             // Important: Read the output stream to avoid blocking
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                 String line;
+
+                long startTimeMillis = System.currentTimeMillis();
+                Pattern timePattern = Pattern.compile("time=([\\d:.]+)");
                 while ((line = reader.readLine()) != null) {
-                    logger.debug("ffmpeg: {}", line);
+                    Matcher matcher = timePattern.matcher(line);
+                    if (matcher.find()) {
+                        String timeStr = matcher.group(1);
+                        double processedSeconds = parseTimeToSeconds(timeStr);
+                        double percent = (processedSeconds / totalDuration) * 100;
+
+                        long now = System.currentTimeMillis();
+                        double elapsedSeconds = (now - startTimeMillis) / 1000.0;
+
+                        // Avoid division by zero
+                        if (processedSeconds > 0) {
+                            double estimatedTotalTime = (elapsedSeconds / processedSeconds) * totalDuration;
+                            double remainingTime = estimatedTotalTime - elapsedSeconds;
+
+                            String remainingStr = formatSecondsToHHMM(remainingTime);
+                            System.out.printf("\rCompressing: [ %3.0f%% ] Remaining time: [ %s ]", percent, remainingStr);
+                            System.out.flush();
+                        }
+                    }
                 }
+                System.out.println(" ✓");
             }
 
             int exitCode = process.waitFor();
@@ -120,5 +148,20 @@ public class VideoCompressor {
             Thread.currentThread().interrupt();
             return String.format("Error during video compression - %s", e.getMessage());
         }
+    }
+
+    private double parseTimeToSeconds(String timeStr) {
+        String[] parts = timeStr.split(":");
+        double hours = Double.parseDouble(parts[0]);
+        double minutes = Double.parseDouble(parts[1]);
+        double seconds = Double.parseDouble(parts[2]);
+        return hours * 3600 + minutes * 60 + seconds;
+    }
+
+    private String formatSecondsToHHMM(double seconds) {
+        int totalMinutes = (int) (seconds / 60);
+        int hours = totalMinutes / 60;
+        int minutes = totalMinutes % 60;
+        return String.format("%02dh %02dm", hours, minutes);
     }
 }

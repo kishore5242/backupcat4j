@@ -36,7 +36,7 @@ public class FileIndexer {
         AtomicInteger i = new AtomicInteger();
         for (Path path : files) {
             int percentage = (i.get() * 100) / total;
-            System.out.print("\rIndexing... " + percentage + "%");
+            System.out.print("\rIndexing... [ " + percentage + "% ]");
             try {
                 BasicFileAttributes attr = Files.readAttributes(path, BasicFileAttributes.class);
                 long size = attr.size();

@@ -25,12 +25,12 @@ public class App {
             AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext("org.kapps");
 
             BackupOptions backupOptions = BackupOptions.builder()
-                    .source("D:\\backup\\oldphone")
-                    .target("D:\\backup\\backup-testing")
-                    .replace(false)
-                    .organize(true)
+                    .source("D:\\backup\\from")
+                    .target("D:\\backup\\to")
+                    .replace(true)
+                    .organize(false)
                     .compressVideos(true)
-                    .maxAvgBitRate(1_500_000)
+                    .maxAvgBitRate(1_000_000)
                     .ffmpeg("D:\\apps\\ffmpeg-7.1.1-essentials_build\\bin\\ffmpeg.exe")
                     .ffprobe("D:\\apps\\ffmpeg-7.1.1-essentials_build\\bin\\ffprobe.exe")
                     .skipOthers(true)

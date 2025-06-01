@@ -12,7 +12,9 @@ public class FileUtils {
 
     public static void silentDelete(Path path) {
         try {
-            Files.delete(path);
+            if (Files.exists(path)) {
+                Files.delete(path);
+            }
         } catch (IOException e) {
             logger.error("Failed to delete file", e);
         }
