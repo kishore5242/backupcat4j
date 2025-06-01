@@ -120,7 +120,7 @@ public class VideoCompressor {
                             double remainingTime = estimatedTotalTime - elapsedSeconds;
 
                             String remainingStr = formatSecondsToHHMM(remainingTime);
-                            System.out.printf("\rCompressing: [ %3.0f%% ] Remaining time: [ %s ]", percent, remainingStr);
+                            System.out.printf("\rTime left: [ %s ] [ %3.0f%% ]", remainingStr, percent);
                             System.out.flush();
                         }
                     }
@@ -157,6 +157,7 @@ public class VideoCompressor {
         int totalMinutes = (int) (seconds / 60);
         int hours = totalMinutes / 60;
         int minutes = totalMinutes % 60;
-        return String.format("%02dh %02dm", hours, minutes);
+        int secs = (int) (seconds % 60);
+        return String.format("%02dh %02dm %02ds", hours, minutes, secs);
     }
 }

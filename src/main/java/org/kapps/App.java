@@ -26,15 +26,15 @@ public class App {
             AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext("org.kapps");
 
             BackupOptions backupOptions = BackupOptions.builder()
-                    .source("Q:\\4_Challenges\\samarpita-3")
-                    .target("D:\\backup\\to")
+                    .source("P:\\1_Beginning\\dhoni")
+                    .target("R:\\backup-testing")
                     .replace(true)
-                    .organize(OrganizeMode.IGNORING_FIRST_FOLDER)
+                    .organize(OrganizeMode.FULL)
                     .compressVideos(true)
                     .maxAvgBitRate(1_000_000)
                     .ffmpeg("D:\\apps\\ffmpeg-7.1.1-essentials_build\\bin\\ffmpeg.exe")
                     .ffprobe("D:\\apps\\ffmpeg-7.1.1-essentials_build\\bin\\ffprobe.exe")
-                    .skipOthers(true)
+                    .skipOthers(false)
                     .build();
 
             // Backup

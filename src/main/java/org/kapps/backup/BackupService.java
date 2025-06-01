@@ -38,6 +38,7 @@ public class BackupService {
         List<IndexedFile> indexedFiles = index(backupOptions);
 
         // Backup
+        ProgressTracker progressTracker = new ProgressTracker(indexedFiles);
         for (IndexedFile indexedFile : indexedFiles) {
             try {
                 BackupAgent agent = agentFactory.getAgent(indexedFile.getMimeType());
@@ -53,6 +54,7 @@ public class BackupService {
                         .message(e.getMessage())
                         .build());
             }
+            progressTracker.logProgress(indexedFile);
         }
         // print results
         logBackupResults(indexedFiles, backupResults, sw);
@@ -70,6 +72,7 @@ public class BackupService {
         }
         return indexedFiles;
     }
+
 
     private void logBackupResults(List<IndexedFile> indexedFiles, List<BackupResult> backupResults, Stopwatch sw) {
         logger.info("-------------------------------------------RESULT-----------------------------------------------");
