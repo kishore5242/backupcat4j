@@ -51,14 +51,11 @@ public class BackupUtils {
         return targetPath;
     }
 
-    public static Path addSuffixToFileName(Path originalPath, String suffix) {
-        Path parent = originalPath.getParent();
-        String fileName = originalPath.getFileName().toString();
-
-        int dotIndex = fileName.lastIndexOf('.');
-        String name = (dotIndex == -1) ? fileName : fileName.substring(0, dotIndex);
-        String extension = (dotIndex == -1) ? "" : fileName.substring(dotIndex);
-
-        return parent.resolve(name + suffix + extension);
+    public static String formatSecondsToHHMMSS(double seconds) {
+        int totalMinutes = (int) (seconds / 60);
+        int hours = totalMinutes / 60;
+        int minutes = totalMinutes % 60;
+        int secs = (int) (seconds % 60);
+        return String.format("%02d:%02d:%02d", hours, minutes, secs);
     }
 }

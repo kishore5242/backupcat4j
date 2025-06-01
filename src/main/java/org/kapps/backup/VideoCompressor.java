@@ -1,5 +1,6 @@
 package org.kapps.backup;
 
+import org.kapps.utils.BackupUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -119,8 +120,8 @@ public class VideoCompressor {
                             double estimatedTotalTime = (elapsedSeconds / processedSeconds) * totalDuration;
                             double remainingTime = estimatedTotalTime - elapsedSeconds;
 
-                            String remainingStr = formatSecondsToHHMM(remainingTime);
-                            System.out.printf("\rTime left: [ %s ] [ %3.0f%% ]", remainingStr, percent);
+                            String remainingStr = BackupUtils.formatSecondsToHHMMSS(remainingTime);
+                            System.out.printf("\r[ ETA: %s ] [ %3.0f%% ]", remainingStr, percent);
                             System.out.flush();
                         }
                     }
@@ -151,13 +152,5 @@ public class VideoCompressor {
         double minutes = Double.parseDouble(parts[1]);
         double seconds = Double.parseDouble(parts[2]);
         return hours * 3600 + minutes * 60 + seconds;
-    }
-
-    private String formatSecondsToHHMM(double seconds) {
-        int totalMinutes = (int) (seconds / 60);
-        int hours = totalMinutes / 60;
-        int minutes = totalMinutes % 60;
-        int secs = (int) (seconds % 60);
-        return String.format("%02dh %02dm %02ds", hours, minutes, secs);
     }
 }
