@@ -86,6 +86,55 @@ public class FileIndexer {
         return indexedFiles;
     }
 
+    public static List<IndexedFile> indexTargetFiles(BackupOptions backupOptions) throws IOException {
+        List<IndexedFile> indexedFiles = new ArrayList<>();
+
+        String target = backupOptions.getTarget();
+        Path targetDir = Paths.get(target);
+        logger.info("Indexing target folder {}", target);
+
+        // get all file paths
+        List<Path> files;
+        try (Stream<Path> stream = Files.walk(targetDir)) {
+            files = stream.filter(Files::isRegularFile).toList();
+        }
+        int total = files.size();
+
+        logger.info("Found {} files", total);
+        AtomicInteger i = new AtomicInteger();
+        for (Path path : files) {
+            int percentage = (i.get() * 100) / total;
+            System.out.print("\rIndexing... [ " + percentage + "% ]");
+            try {
+                BasicFileAttributes attr = Files.readAttributes(path, BasicFileAttributes.class);
+                long size = attr.size();
+                long lastModified = attr.lastModifiedTime().toMillis();
+                String key = targetDir.relativize(path).toString();
+                String mimeType = MimeUtils.detectMimeType(path);
+
+                IndexedFile indexedFile = new IndexedFile.Builder()
+                        .path(path)
+                        .mimeType(mimeType)
+                        .relativePath(key)
+                        .size(size)
+                        .lastModified(lastModified)
+                        .suffix("")
+                        .build();
+
+                indexedFiles.add(indexedFile);
+            } catch (IOException e) {
+                logger.error("Failed to index {}", path, e);
+            } finally {
+                i.getAndIncrement();
+            }
+        }
+
+        System.out.println(); // move to new line after progress
+        logger.info("Indexing completed for {}", targetDir);
+        Collections.sort(indexedFiles);
+        return indexedFiles;
+    }
+
     public static List<IndexedFile> slice(List<IndexedFile> indexedFiles, Path path) {
         int index = -1;
         for (int i = 0; i < indexedFiles.size(); i++) {

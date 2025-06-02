@@ -3,6 +3,7 @@ package org.kapps.backup;
 import com.google.common.base.Stopwatch;
 import org.kapps.index.FileIndexer;
 import org.kapps.index.IndexedFile;
+import org.kapps.utils.BackupUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,8 +60,12 @@ public class BackupService {
             }
             progressTracker.logProgress(indexedFile);
         }
+
+        // index target
+        List<IndexedFile> targetIndexedFiles = FileIndexer.indexTargetFiles(backupOptions);
+
         // print results
-        logBackupResults(pendingIndexedFiles, indexedFiles, backupResults, sw);
+        logBackupResults(pendingIndexedFiles, indexedFiles, targetIndexedFiles, backupResults, sw);
     }
 
     private List<IndexedFile> index(BackupOptions backupOptions) throws IOException {
@@ -77,7 +82,13 @@ public class BackupService {
     }
 
 
-    private void logBackupResults(List<IndexedFile> pendingIndexedFiles, List<IndexedFile> indexedFiles, List<BackupResult> backupResults, Stopwatch sw) {
+    private void logBackupResults(
+            List<IndexedFile> pendingIndexedFiles,
+            List<IndexedFile> indexedFiles,
+            List<IndexedFile> targetIndexedFiles,
+            List<BackupResult> backupResults,
+            Stopwatch sw
+    ) {
         logger.info("-------------------------------------------RESULT-----------------------------------------------");
 
         // Errors
@@ -95,7 +106,7 @@ public class BackupService {
         Map<BackupAction, List<BackupResult>> groupedByAction = backupResults.stream().collect(Collectors.groupingBy(BackupResult::getBackupAction));
         groupedByAction.forEach((action, results) -> {
             long success = results.stream().filter(BackupResult::getStatus).count();
-            logger.info("\t{}: \t\t\t\t\t{}/{}", action, success, results.size());
+            logger.info(String.format("\t%-22s:\t%d/%d", action, success, results.size()));
         });
 
 
@@ -105,25 +116,34 @@ public class BackupService {
         Map<String, List<BackupResult>> grouppedByAgent = backupResults.stream().collect(Collectors.groupingBy(BackupResult::getAgent));
         grouppedByAgent.forEach((agent, results) -> {
             long success = results.stream().filter(BackupResult::getStatus).count();
-            logger.info("\t{}: \t{}/{}", agent, success, results.size());
+            logger.info(String.format("\t%-22s:\t%d/%d", agent, success, results.size()));
         });
 
         logger.info("");
-        logger.info("Counts:");
-        logger.info("\tIndexed: \t\t\t\t{}", indexedFiles.size());
+        logger.info("File counts:");
+        logger.info("\tIndexed               :\t{}", indexedFiles.size());
         int previous = indexedFiles.size() - pendingIndexedFiles.size();
-        logger.info("\tPreviously backed up: \t{}", previous);
+        logger.info("\tPreviously backed up  :\t{}", previous);
         // clashes
         long clashes = pendingIndexedFiles.stream().filter(i -> StringUtils.hasLength(i.getSuffix())).count();
-        logger.info("\tClashes handles: \t\t{}", clashes);
+        logger.info("\tClashes handles       :\t{}", clashes);
         // total
         long backedUpCount = backupResults.stream().filter(BackupResult::getStatus).count();
-        logger.info("\tBacked up: \t\t\t\t{}/{}", backedUpCount, pendingIndexedFiles.size());
-        logger.info("\tFailed: \t\t\t\t{}", failed.size());
+        logger.info("\tBacked up             :\t{}/{}", backedUpCount, pendingIndexedFiles.size());
+        logger.info("\tFailed                :\t{}", failed.size());
+
+        // size
+        long originalSize = indexedFiles.stream().mapToLong(IndexedFile::getSize).sum();
+        long backupSize = targetIndexedFiles.stream().mapToLong(IndexedFile::getSize).sum();
+        logger.info("");
+        logger.info("Folder sizes:");
+        logger.info("\tOriginal              :\t{}", BackupUtils.humanReadableByteCount(originalSize));
+        logger.info("\tBackup                :\t{}", BackupUtils.humanReadableByteCount(backupSize));
 
         // time
         logger.info("");
-        logger.info("Time taken: \t\t\t\t{}", sw.stop());
+        logger.info("Time taken:");
+        logger.info("\tTotal                 :\t{}", sw.stop());
         logger.info("----------------------------------------COMPLETE------------------------------------------------");
     }
 }

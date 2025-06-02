@@ -58,4 +58,17 @@ public class BackupUtils {
         int secs = (int) (seconds % 60);
         return String.format("%02d:%02d:%02d", hours, minutes, secs);
     }
+
+    public static String humanReadableByteCount(long bytes) {
+        String[] units = {"B", "KB", "MB", "GB", "TB", "PB", "EB"};
+        int unitIndex = 0;
+        double size = bytes;
+
+        while (size >= 1024 && unitIndex < units.length - 1) {
+            size /= 1024;
+            unitIndex++;
+        }
+
+        return String.format("%.1f %s", size, units[unitIndex]);
+    }
 }
