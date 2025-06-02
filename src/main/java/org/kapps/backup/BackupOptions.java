@@ -10,6 +10,7 @@ public class BackupOptions {
     private final String ffmpeg;
     private final String ffprobe;
     private final boolean skipOthers;
+    private final boolean resume; // if applicable
 
     private BackupOptions(Builder builder) {
         this.source = builder.source;
@@ -21,6 +22,7 @@ public class BackupOptions {
         this.ffprobe = builder.ffprobe;
         this.skipOthers = builder.skipOthers;
         this.organize = builder.organize;
+        this.resume = builder.resume;
     }
 
     public static Builder builder() {
@@ -37,6 +39,7 @@ public class BackupOptions {
         private String ffmpeg;
         private String ffprobe;
         private boolean skipOthers;
+        private boolean resume;
 
         public Builder source(String source) {
             this.source = source;
@@ -83,6 +86,11 @@ public class BackupOptions {
             return this;
         }
 
+        public Builder resume(boolean resume) {
+            this.resume = resume;
+            return this;
+        }
+
         public BackupOptions build() {
             return new BackupOptions(this);
         }
@@ -122,6 +130,10 @@ public class BackupOptions {
 
     public OrganizeMode getOrganize() {
         return organize;
+    }
+
+    public boolean isResume() {
+        return resume;
     }
 }
 

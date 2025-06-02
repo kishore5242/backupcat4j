@@ -21,6 +21,17 @@ public class FileUtils {
         }
     }
 
+    public static void recreate(Path path) {
+        try {
+            if (Files.exists(path)) {
+                Files.delete(path);
+            }
+            Files.createFile(path);
+        } catch (IOException e) {
+            logger.error("Failed to recreate file", e);
+        }
+    }
+
     public static Path addSuffixToFile(Path originalPath, String suffix) {
         Path parent = originalPath.getParent();
         String fileName = originalPath.getFileName().toString();

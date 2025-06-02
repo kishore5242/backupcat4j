@@ -1,7 +1,10 @@
 package org.kapps.backup;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import org.kapps.index.IndexedFile;
 
+@JsonDeserialize(builder = BackupResult.Builder.class)
 public class BackupResult {
     private final IndexedFile indexedFile;
     private final BackupAction backupAction;
@@ -21,6 +24,7 @@ public class BackupResult {
         return new Builder();
     }
 
+    @JsonPOJOBuilder(withPrefix = "")
     public static class Builder {
         private IndexedFile indexedFile;
         private BackupAction backupAction;

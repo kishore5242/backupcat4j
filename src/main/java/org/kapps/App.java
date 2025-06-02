@@ -35,6 +35,7 @@ public class App {
                     .ffmpeg("D:\\apps\\ffmpeg-7.1.1-essentials_build\\bin\\ffmpeg.exe")
                     .ffprobe("D:\\apps\\ffmpeg-7.1.1-essentials_build\\bin\\ffprobe.exe")
                     .skipOthers(false)
+                    .resume(true)
                     .build();
 
             // Backup

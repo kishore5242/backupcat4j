@@ -86,6 +86,19 @@ public class FileIndexer {
         return indexedFiles;
     }
 
+    public static List<IndexedFile> slice(List<IndexedFile> indexedFiles, Path path) {
+        int index = -1;
+        for (int i = 0; i < indexedFiles.size(); i++) {
+            if (path.equals(indexedFiles.get(i).getPath())) {
+                index = i;
+            }
+        }
+        if (index == -1 || index == indexedFiles.size() - 1) {
+            return indexedFiles;
+        }
+        return indexedFiles.subList(index + 1, indexedFiles.size());
+    }
+
     public static void logFileCountsByMime(List<IndexedFile> indexedFiles) {
         Map<String, List<IndexedFile>> groupedFiles = indexedFiles.stream().collect(Collectors.groupingBy(IndexedFile::getMimeType));
         groupedFiles.forEach((mimeType, files) -> {

@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.kapps.backup.BackupAction.BACKUP;
@@ -37,9 +38,11 @@ public class BackupService {
         // Index folders
         List<IndexedFile> indexedFiles = index(backupOptions);
 
-        // Backup
         ProgressTracker progressTracker = new ProgressTracker(indexedFiles);
-        for (IndexedFile indexedFile : indexedFiles) {
+        List<IndexedFile> pendingIndexedFiles = progressTracker.getPending(backupOptions);
+
+        // Backup
+        for (IndexedFile indexedFile : pendingIndexedFiles) {
             try {
                 BackupAgent agent = agentFactory.getAgent(indexedFile.getMimeType());
                 BackupResult backupResult = agent.backup(indexedFile, backupOptions);
@@ -57,7 +60,7 @@ public class BackupService {
             progressTracker.logProgress(indexedFile);
         }
         // print results
-        logBackupResults(indexedFiles, backupResults, sw);
+        logBackupResults(pendingIndexedFiles, indexedFiles, backupResults, sw);
     }
 
     private List<IndexedFile> index(BackupOptions backupOptions) throws IOException {
@@ -74,21 +77,27 @@ public class BackupService {
     }
 
 
-    private void logBackupResults(List<IndexedFile> indexedFiles, List<BackupResult> backupResults, Stopwatch sw) {
+    private void logBackupResults(List<IndexedFile> pendingIndexedFiles, List<IndexedFile> indexedFiles, List<BackupResult> backupResults, Stopwatch sw) {
         logger.info("-------------------------------------------RESULT-----------------------------------------------");
+
+        // Errors
+        Set<BackupResult> failed = backupResults.stream().filter(result -> !result.getStatus()).collect(Collectors.toSet());
+        if (!failed.isEmpty()) {
+            logger.info("Failures:");
+            failed.forEach(f -> {
+                logger.info("\tFailed to {} file {} with reason: {}",
+                        f.getBackupAction(), f.getIndexedFile().getRelativePath(), f.getMessage());
+            });
+        }
 
         // actions
         logger.info("Actions performed:");
         Map<BackupAction, List<BackupResult>> groupedByAction = backupResults.stream().collect(Collectors.groupingBy(BackupResult::getBackupAction));
         groupedByAction.forEach((action, results) -> {
             long success = results.stream().filter(BackupResult::getStatus).count();
-            logger.info("{}: {}/{}", action, success, results.size());
+            logger.info("\t{}: \t\t\t\t\t{}/{}", action, success, results.size());
         });
 
-        // clashes
-        logger.info("");
-        long clashes = indexedFiles.stream().filter(i -> StringUtils.hasLength(i.getSuffix())).count();
-        logger.info("Clashes handles: {}", clashes);
 
         // agents
         logger.info("");
@@ -96,27 +105,25 @@ public class BackupService {
         Map<String, List<BackupResult>> grouppedByAgent = backupResults.stream().collect(Collectors.groupingBy(BackupResult::getAgent));
         grouppedByAgent.forEach((agent, results) -> {
             long success = results.stream().filter(BackupResult::getStatus).count();
-            logger.info("{}: {}/{} files", agent, success, results.size());
+            logger.info("\t{}: \t{}/{}", agent, success, results.size());
         });
 
         logger.info("");
-        logger.info("Failures:");
-        // Errors
-        backupResults.forEach(result -> {
-            if (!result.getStatus()) {
-                logger.info("Failed to {} file {} with reason: {}",
-                        result.getBackupAction(), result.getIndexedFile().getRelativePath(), result.getMessage());
-            }
-        });
-
+        logger.info("Counts:");
+        logger.info("\tIndexed: \t\t\t\t{}", indexedFiles.size());
+        int previous = indexedFiles.size() - pendingIndexedFiles.size();
+        logger.info("\tPreviously backed up: \t{}", previous);
+        // clashes
+        long clashes = pendingIndexedFiles.stream().filter(i -> StringUtils.hasLength(i.getSuffix())).count();
+        logger.info("\tClashes handles: \t\t{}", clashes);
         // total
-        logger.info("");
         long backedUpCount = backupResults.stream().filter(BackupResult::getStatus).count();
-        logger.info("Backed up: {}/{} files", backedUpCount, indexedFiles.size());
+        logger.info("\tBacked up: \t\t\t\t{}/{}", backedUpCount, pendingIndexedFiles.size());
+        logger.info("\tFailed: \t\t\t\t{}", failed.size());
 
         // time
         logger.info("");
-        logger.info("Time taken: {}", sw.stop());
+        logger.info("Time taken: \t\t\t\t{}", sw.stop());
         logger.info("----------------------------------------COMPLETE------------------------------------------------");
     }
 }

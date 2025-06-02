@@ -3,10 +3,9 @@ package org.kapps;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.kapps.backup.BackupOptions;
-import org.kapps.backup.BackupService;
-import org.kapps.backup.OrganizeMode;
-import org.kapps.backup.VideoCompressor;
+import org.kapps.backup.*;
+import org.kapps.index.FileIndexer;
+import org.kapps.index.IndexedFile;
 import org.kapps.utils.Directories;
 import org.kapps.utils.FileUtils;
 import org.kapps.utils.TestUtils;
@@ -19,6 +18,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -185,6 +185,54 @@ public class BackupServiceTest {
             assertTrue(Files.exists(Paths.get(target.toString(), "media/IMAGE/mr.serious.jpg")));
             assertTrue(Files.exists(Paths.get(target.toString(), "media/OTHER/message.json")));
             assertTrue(Files.exists(Paths.get(target.toString(), "others/DOCUMENT/lorem_doc.docx")));
+
+        } finally {
+            FileUtils.deleteRecursively(result.tempBaseDir());
+        }
+    }
+
+    @Test
+    void testResume() throws IOException {
+        Directories result = TestUtils.extractZipToTemp("src/test/resources/samples/simple.zip");
+        Path source = result.sourceDir();
+        Path target = result.targetDir();
+        try {
+            BackupOptions backupOptions = BackupOptions.builder()
+                    .source(source.toString())
+                    .target(target.toString())
+                    .replace(true)
+                    .organize(OrganizeMode.FULL)
+                    .compressVideos(true)
+                    .maxAvgBitRate(1_000_000)
+                    .skipOthers(false)
+                    .resume(true)
+                    .build();
+
+            // Create a last run file
+            List<IndexedFile> indexedFiles = FileIndexer.indexFiles(backupOptions);
+            ProgressTracker progressTracker = new ProgressTracker(indexedFiles);
+            progressTracker.reset();
+
+            // complete 4 files
+            int lastIndex = 4;
+            for (int i = 0; i < lastIndex; i++) {
+                progressTracker.appendResult(BackupResult.builder()
+                        .indexedFile(indexedFiles.get(i))
+                        .status(true)
+                        .backupAction(BackupAction.BACKUP)
+                        .agent("junit")
+                        .build());
+            }
+
+            backupService.backupFiles(backupOptions);
+
+            // previously processed
+            assertFalse(Files.exists(Paths.get(target.toString(), "OTHER/message.json")));
+            assertFalse(Files.exists(Paths.get(target.toString(), "OTHER/lorem_doc.docx")));
+            // resumed
+            assertTrue(Files.exists(Paths.get(target.toString(), "VIDEO/pineapple.mp4")));
+            assertTrue(Files.exists(Paths.get(target.toString(), "IMAGE/mr.serious.jpg")));
+            assertTrue(Files.exists(Paths.get(target.toString(), "OTHER/hello.txt")));
 
         } finally {
             FileUtils.deleteRecursively(result.tempBaseDir());

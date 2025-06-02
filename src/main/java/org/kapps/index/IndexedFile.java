@@ -1,26 +1,31 @@
 package org.kapps.index;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import org.kapps.backup.FileType;
 import org.kapps.utils.OrganizerUtils;
 
 import java.nio.file.Path;
 import java.util.Objects;
 
+@JsonDeserialize(builder = IndexedFile.Builder.class)
 public class IndexedFile implements Comparable<IndexedFile> {
+    private final Path path;
     private final long size;
     private final long lastModified;
-    private final Path path;
     private final String mimeType;
     private final String relativePath;
     private final String suffix;
 
     // calculated
+    @JsonIgnore
     private final FileType fileType;
 
     private IndexedFile(Builder builder) {
+        this.path = builder.path;
         this.size = builder.size;
         this.lastModified = builder.lastModified;
-        this.path = builder.path;
         this.mimeType = builder.mimeType;
         this.relativePath = builder.relativePath;
         this.fileType = OrganizerUtils.parse(builder.mimeType, builder.path);
@@ -28,16 +33,16 @@ public class IndexedFile implements Comparable<IndexedFile> {
     }
 
     // Getters
+    public Path getPath() {
+        return path;
+    }
+
     public long getSize() {
         return size;
     }
 
     public long getLastModified() {
         return lastModified;
-    }
-
-    public Path getPath() {
-        return path;
     }
 
     public String getMimeType() {
@@ -73,11 +78,11 @@ public class IndexedFile implements Comparable<IndexedFile> {
         return this.path.compareTo(o.path);
     }
 
-    // Builder
+    @JsonPOJOBuilder(withPrefix = "")
     public static class Builder {
+        private Path path;
         private long size;
         private long lastModified;
-        private Path path;
         private String mimeType;
         private String relativePath;
         private String suffix = "";
