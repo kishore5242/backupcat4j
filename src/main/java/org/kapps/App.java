@@ -3,16 +3,11 @@ package org.kapps;
 import org.kapps.backup.BackupOptions;
 import org.kapps.backup.BackupService;
 import org.kapps.backup.OrganizeMode;
-import org.kapps.index.FileIndexer;
-import org.kapps.index.IndexedFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.io.IOException;
-import java.util.List;
-
-import static org.kapps.backup.FileType.OTHER;
 
 /**
  * Hello world!
@@ -26,12 +21,12 @@ public class App {
             AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext("org.kapps");
 
             BackupOptions backupOptions = BackupOptions.builder()
-                    .source("H:\\drone pics")
-                    .target("D:\\backup\\to")
+                    .source("R:\\")
+                    .target("B:\\")
                     .replace(true)
                     .organize(OrganizeMode.FULL)
                     .compressVideos(true)
-                    .maxAvgBitRate(1_000_000)
+                    .maxAvgBitRate(1_500_000)
                     .ffmpeg("D:\\apps\\ffmpeg-7.1.1-essentials_build\\bin\\ffmpeg.exe")
                     .ffprobe("D:\\apps\\ffmpeg-7.1.1-essentials_build\\bin\\ffprobe.exe")
                     .skipOthers(false)

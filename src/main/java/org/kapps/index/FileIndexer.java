@@ -8,9 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -29,10 +27,22 @@ public class FileIndexer {
         logger.info("Indexing folder {}", source);
 
         // get all file paths
-        List<Path> files;
-        try (Stream<Path> stream = Files.walk(sourceDir)) {
-            files = stream.filter(Files::isRegularFile).toList();
-        }
+        List<Path> files = new ArrayList<>();
+        Files.walkFileTree(sourceDir, new SimpleFileVisitor<>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                if (attrs.isRegularFile()) {
+                    files.add(file);
+                }
+                return FileVisitResult.CONTINUE;
+            }
+            @Override
+            public FileVisitResult visitFileFailed(Path file, IOException exc) {
+                // Log and skip access-denied files
+                logger.error("Skipping inaccessible file/folder: {}", file);
+                return FileVisitResult.CONTINUE;
+            }
+        });
         int total = files.size();
 
         logger.info("Found {} files", total);
@@ -94,10 +104,22 @@ public class FileIndexer {
         logger.info("Indexing target folder {}", target);
 
         // get all file paths
-        List<Path> files;
-        try (Stream<Path> stream = Files.walk(targetDir)) {
-            files = stream.filter(Files::isRegularFile).toList();
-        }
+        List<Path> files = new ArrayList<>();
+        Files.walkFileTree(targetDir, new SimpleFileVisitor<>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                if (attrs.isRegularFile()) {
+                    files.add(file);
+                }
+                return FileVisitResult.CONTINUE;
+            }
+            @Override
+            public FileVisitResult visitFileFailed(Path file, IOException exc) {
+                // Log and skip access-denied files
+                logger.error("Skipping inaccessible file/folder: {}", file);
+                return FileVisitResult.CONTINUE;
+            }
+        });
         int total = files.size();
 
         logger.info("Found {} files", total);
