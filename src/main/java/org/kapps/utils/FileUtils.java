@@ -40,7 +40,7 @@ public class FileUtils {
         String name = (dotIndex == -1) ? fileName : fileName.substring(0, dotIndex);
         String extension = (dotIndex == -1) ? "" : fileName.substring(dotIndex);
 
-        return parent.resolve(name + suffix + extension);
+        return parent.resolve(name + "_" + suffix + extension);
     }
 
     public static void deleteRecursively(Path path) throws IOException {

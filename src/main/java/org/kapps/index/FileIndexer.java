@@ -13,7 +13,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class FileIndexer {
 
@@ -36,6 +35,7 @@ public class FileIndexer {
                 }
                 return FileVisitResult.CONTINUE;
             }
+
             @Override
             public FileVisitResult visitFileFailed(Path file, IOException exc) {
                 // Log and skip access-denied files
@@ -47,7 +47,7 @@ public class FileIndexer {
 
         logger.info("Found {} files", total);
         AtomicInteger i = new AtomicInteger();
-        Map<Path, String> suffixes = new HashMap<>(); // path and their suffix - to handle clashes
+        Map<Path, Integer> suffixes = new HashMap<>(); // path and their suffix - to handle clashes
         boolean skipSuffix = backupOptions.getOrganize().equals(OrganizeMode.NONE);
         for (Path path : files) {
             int percentage = (i.get() * 100) / total;
@@ -60,12 +60,12 @@ public class FileIndexer {
                 String mimeType = MimeUtils.detectMimeType(path);
 
                 // Handle clashes and suffix
-                String thisFileSuffix = "";
+                Integer thisFileSuffix = 0;
                 if (!skipSuffix) {
-                    String existing = suffixes.get(path.getFileName());
+                    Integer existing = suffixes.get(path.getFileName());
                     // handle clash
                     if (existing != null) {
-                        thisFileSuffix = existing + "_clash";
+                        thisFileSuffix = existing + 1;
                         suffixes.put(path.getFileName(), thisFileSuffix);
                     } else {
                         // non-null so that clash can be detected
@@ -79,7 +79,7 @@ public class FileIndexer {
                         .relativePath(key)
                         .size(size)
                         .lastModified(lastModified)
-                        .suffix(thisFileSuffix)
+                        .suffix(thisFileSuffix == 0 ? "" : String.valueOf(thisFileSuffix))
                         .build();
 
                 indexedFiles.add(indexedFile);
@@ -113,6 +113,7 @@ public class FileIndexer {
                 }
                 return FileVisitResult.CONTINUE;
             }
+
             @Override
             public FileVisitResult visitFileFailed(Path file, IOException exc) {
                 // Log and skip access-denied files

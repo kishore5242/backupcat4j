@@ -24,7 +24,7 @@ public class App {
                     .source("R:\\")
                     .target("B:\\")
                     .replace(true)
-                    .organize(OrganizeMode.FULL)
+                    .organize(OrganizeMode.IGNORING_FIRST_FOLDER)
                     .compressVideos(true)
                     .maxAvgBitRate(1_500_000)
                     .ffmpeg("D:\\apps\\ffmpeg-7.1.1-essentials_build\\bin\\ffmpeg.exe")
