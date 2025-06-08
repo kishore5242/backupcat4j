@@ -36,11 +36,8 @@
 
 1. **Download** the `backupcat4j.zip` archive.
 2. **Extract** the contents to any folder on your system.
-3. **Run** the executable file `BackupCat4j.exe`
-
-*Executable will guide you through required inputs and launch the backup process with sensible defaults.*
-
-4. **Result should look like**
+3. **Run** `BackupCat4j.exe`. The app will open in a window and guide you through the required inputs, using sensible defaults.
+4. **Result** should look like this once completed.
 
 ```declarative
 -------------------------------------------RESULT-----------------------------------------------
