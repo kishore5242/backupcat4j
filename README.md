@@ -34,7 +34,7 @@
 
 ## Option 1: Just Run the Executable
 
-1. **Download** the `backupcat4j.zip` archive.
+1. **Download** the latest `backupcat4j-x.x.x.zip` from [here](https://github.com/kishore5242/backupcat4j/releases)
 2. **Extract** the contents to any folder on your system.
 3. **Run** `BackupCat4j.exe`. The app will open in a window and guide you through the required inputs, using sensible defaults.
 4. **Result** should look like this once completed.
@@ -86,7 +86,7 @@ Make sure the following tools are installed:
 * [Java 24 (or higher)](https://jdk.java.net/)
 * [FFMPEG (latest version)](https://ffmpeg.org/download.html)
 
-### 2. Download the latest `jar` file
+### 2. Download the latest JAR file from [here](https://github.com/kishore5242/backupcat4j/releases)
 
 ### 3. Run the java command
 
@@ -120,7 +120,7 @@ Import as a **Maven** Java project.
 
 ### 3. Set Backup Options
 
-Modify the `main` method in `App.java` to configure your backup:
+Modify the `main` method in `App.java` to configure your test backup:
 
 ```java
 BackupOptions backupOptions = BackupOptions.builder()
@@ -174,11 +174,3 @@ Pull requests and feature suggestions are welcome. Let’s make **BackupCat4j** 
 * [ ] CLI interface improvements
 * [ ] Config file support (e.g., `backup.json`)
 * [ ] Hash-based integrity verification
-
----
-
-## 📄 License
-
-MIT License – *Feel free to use and modify with attribution.*
-
----
