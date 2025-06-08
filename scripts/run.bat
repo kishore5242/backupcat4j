@@ -20,7 +20,7 @@ set /p ORGANIZE=Enter organize mode [FULL, IGNORING_FIRST_FOLDER, NONE] (default
 if "%ORGANIZE%"=="" set ORGANIZE=FULL
 
 REM Prompt user for bitrate with default 3000000
-set /p BITRATE=Enter bitrate (default: 3000000):
+set /p BITRATE=Enter maximum bitrate for videos (default: 3000000):
 if "%BITRATE%"=="" set BITRATE=3000000
 
 REM Run the backup JAR with user inputs

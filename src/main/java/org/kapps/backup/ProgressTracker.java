@@ -36,6 +36,7 @@ public class ProgressTracker {
         this.startTimeNanos = System.nanoTime();
         this.progressFile = Paths.get(System.getProperty("user.dir")).resolve("backupcat_progress.jsonl");
         FileUtils.createIfNotExists(this.progressFile);
+        logger.info("Progress tracker {}", this.progressFile);
     }
 
     public List<IndexedFile> getPending(BackupOptions backupOptions) throws IOException {

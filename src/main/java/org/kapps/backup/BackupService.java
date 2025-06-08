@@ -48,15 +48,18 @@ public class BackupService {
                 BackupAgent agent = agentFactory.getAgent(indexedFile.getMimeType());
                 BackupResult backupResult = agent.backup(indexedFile, backupOptions);
                 backupResults.add(backupResult);
+                progressTracker.appendResult(backupResult);
             } catch (Exception e) {
                 logger.error("Failed to back up: {}", indexedFile.getPath(), e);
-                backupResults.add(BackupResult.builder()
+                BackupResult errorResult = BackupResult.builder()
                         .indexedFile(indexedFile)
                         .agent("No agent")
                         .backupAction(BACKUP)
                         .status(false)
                         .message(e.getMessage())
-                        .build());
+                        .build();
+                backupResults.add(errorResult);
+                progressTracker.appendResult(errorResult);
             }
             progressTracker.logProgress(indexedFile);
         }

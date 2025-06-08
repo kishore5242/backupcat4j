@@ -7,16 +7,16 @@
 ## ✨ Features
 
 * ✅ **One-by-One File Copying**: Transfers files individually for better error isolation.
-* 📝 **Understandable Logs**: Tracks progress and reports errors clearly.
-* 🔁 **Resume Support**: Resumes from the last successful file in case of interruptions.
 * 📦 **Video Compression**: Compresses video files on-the-fly using a target average bitrate (via FFMPEG).
-* 📁 **Auto File Organization**:
+* 📁 **Auto File Organization**: Based on the file types, each file will be organized into respective folders.
     * Videos
     * Images
     * Documents
     * Audio
     * Others
 * ⚙️ **Highly Configurable**: Easy customization of backup options through the builder pattern.
+* 🔁 **Resume Support**: Resumes from the last successful file in case of interruptions.
+* 📝 **Understandable Logs**: Tracks progress and reports errors clearly.
 * 🚧 **More Features Coming Soon**:
 
     * Incremental backups
@@ -39,6 +39,9 @@ B:\backup\20250120\
 
 # 🚀 Getting Started
 
+## Requires Java
+* [Java 24 (or higher)](https://jdk.java.net/)
+
 ## Option 1: Just Run the Executable
 
 1. **Download** the `backupcat4j.zip` archive.
@@ -54,7 +57,7 @@ B:\backup\20250120\
 Enter source folder (default: D:\projects\temp\source):D:\projects\temp\mix
 Enter target folder (default: D:\projects\temp\destination):D:\projects\temp\destination
 Enter organize mode [FULL, IGNORING_FIRST_FOLDER, NONE] (default: FULL):IGNORING_FIRST_FOLDER
-Enter bitrate (default: 3000000):
+Enter maximum bitrate for videos (default: 3000000):
 ```
 
 4. **Result will look like**
@@ -178,6 +181,7 @@ Pull requests and feature suggestions are welcome. Let’s make **BackupCat4j** 
 ## 🗓️ Roadmap
 
 * [ ] Incremental backup (only changed files)
+* [ ] File type filter
 * [ ] Dry-run mode
 * [ ] CLI interface improvements
 * [ ] Config file support (e.g., `backup.json`)

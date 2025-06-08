@@ -18,8 +18,8 @@ public class App {
             AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext("org.kapps");
 
             BackupOptions backupOptions = BackupOptions.builder()
-                    .source("I:\\drone pics")
-                    .target("B:\\20221012 drone basavanna temple")
+                    .source("D:\\projects\\temp\\mix")
+                    .target("D:\\projects\\temp\\destination")
                     .replace(true)
                     .organize(OrganizeMode.FULL)
                     .compressVideos(true)
