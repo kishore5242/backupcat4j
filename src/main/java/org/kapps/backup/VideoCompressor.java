@@ -48,8 +48,11 @@ public class VideoCompressor {
     }
 
     public Map<String, String> probeVideo(File inputFile, BackupOptions backupOptions) {
+
+        String ffprobePath = resolveFfprobePath(backupOptions);
+
         ProcessBuilder pb = new ProcessBuilder(
-                backupOptions.getFfprobe(),
+                ffprobePath,
                 "-v", "error",
                 "-select_streams", "v:0",
                 "-show_entries", "stream=codec_name",
@@ -162,6 +165,21 @@ public class VideoCompressor {
             throw new IllegalStateException("FFmpeg not found at " + ffmpegPath);
         }
         return ffmpegPath;
+    }
+
+    private String resolveFfprobePath(BackupOptions options) {
+        if (options.getFfprobe() != null && !options.getFfprobe().isBlank()) {
+            return options.getFfprobe();
+        }
+
+        String ffprobeBinary = isWindows() ? "ffprobe.exe" : "ffprobe";
+        String ffprobePath = Paths.get("ffprobe", ffprobeBinary).toString();
+
+        File ffprobeFile = new File(ffprobePath);
+        if (!ffprobeFile.exists() || !ffprobeFile.canExecute()) {
+            throw new IllegalStateException("FFprobe not found at " + ffprobePath);
+        }
+        return ffprobePath;
     }
 
     private boolean isWindows() {

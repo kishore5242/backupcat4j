@@ -25,18 +25,48 @@
 
 ---
 
-## 🚀 Getting Started
+## Example output folder structure
 
-### 1. Prerequisites
+```
+B:\backup\20250120\
+├── Videos\
+├── Images\
+├── Documents\
+├── Audio\
+└── Others\
+```
+---
+
+# 🚀 Getting Started
+
+## Option 1: Just Run the Executable
+
+1. **Download** the `backupcat4j.zip` archive.
+2. **Extract** the contents to any folder on your system.
+3. **Run** the executable script located in the `backupcat4j/bin` directory:
+
+  * **Windows:** Double-click `run.bat` or execute it from the command prompt.
+  * **Linux/macOS:** Open a terminal, navigate to `backupcat4j/bin`, and run `./run.sh`.
+
+*Both scripts will guide you through required inputs and launch the backup process with sensible defaults.*
+
+## Option 2: Run the JAR File Manually
+
+If you prefer to run the JAR directly with custom options, following below steps:
+
+### 1. Install prerequisites
 
 Make sure the following tools are installed:
 
 * [Java 24 (or higher)](https://jdk.java.net/)
 * [FFMPEG (latest version)](https://ffmpeg.org/download.html)
 
-### 2. Download the jar file
+### 2. Download the zip file and extract it
 
 ### 3. Run the java command
+
+Replace the paths and options as needed.
+
 ```declarative
 java -jar backupcat4j.jar \
 source="I:\media" \
@@ -49,18 +79,6 @@ organize=FULL \
 --replace \
 --bitrate=3000000
 ```
-
-### 4. Output Directory Structure (Example)
-
-```
-B:\backup\20250120\
-├── VIDEO\
-├── IMAGE\
-├── DOCUMENT\
-├── AUDIO\
-└── OTHER\
-```
----
 
 ## 🧑‍💻 Contributing
 
