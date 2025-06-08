@@ -72,24 +72,23 @@ public class VideoBackupAgent implements BackupAgent {
             FileUtils.silentDelete(targetPath);
         }
 
-        Map<String, String> metadata = videoCompressor.probeVideo(sourceFile, backupOptions);
-
-        // check if compression is required
-        if (backupOptions.isCompressVideos() &&
-                !videoCompressor.isAlreadyCompressed(sourceFile, metadata, backupOptions)
-        ) {
-            // compress
-            String error = videoCompressor.compressVideo(sourceFile, targetPath.toFile(), metadata, backupOptions);
-            if (StringUtils.hasLength(error)) {
-                // delete file at the destination if was created
-                FileUtils.silentDelete(targetPath);
-                // so that copy will be attempted next
-            } else {
-                return resultBuilder
-                        .backupAction(COMPRESS)
-                        .status(true)
-                        .message("Video compressed successfully")
-                        .build();
+        if (backupOptions.isCompressVideos()) {
+            // check if compression is required
+            Map<String, String> metadata = videoCompressor.probeVideo(sourceFile, backupOptions);
+            if (!videoCompressor.isAlreadyCompressed(sourceFile, metadata, backupOptions)) {
+                // compress
+                String error = videoCompressor.compressVideo(sourceFile, targetPath.toFile(), metadata, backupOptions);
+                if (StringUtils.hasLength(error)) {
+                    // delete file at the destination if was created
+                    FileUtils.silentDelete(targetPath);
+                    // so that copy will be attempted next
+                } else {
+                    return resultBuilder
+                            .backupAction(COMPRESS)
+                            .status(true)
+                            .message("Video compressed successfully")
+                            .build();
+                }
             }
         }
 
