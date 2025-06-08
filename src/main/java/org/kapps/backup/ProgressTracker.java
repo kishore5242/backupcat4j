@@ -34,7 +34,7 @@ public class ProgressTracker {
         this.indexedFiles = indexedFiles;
         this.totalSize = indexedFiles.stream().mapToLong(IndexedFile::getSize).sum();
         this.startTimeNanos = System.nanoTime();
-        this.progressFile = Paths.get(System.getProperty("user.dir")).resolve("backupcat_progress.jsonl");
+        this.progressFile = Paths.get(System.getProperty("user.dir")).resolve("logs/backupcat4j-progress.jsonl");
         FileUtils.createIfNotExists(this.progressFile);
         logger.info("Progress tracker {}", this.progressFile);
     }

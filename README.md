@@ -1,3 +1,5 @@
+![BackupCat4j logo](src/main/resources/app-icon.ico)
+
 # 🐾 BackupCat4j
 
 **BackupCat4j** is a lightweight Java-based tool designed to back up files from a source folder to a destination directory with intelligence and reliability. It includes robust logging, resume capabilities, media compression (especially for videos), and smart organization based on file types.
@@ -6,7 +8,7 @@
 
 ## ✨ Features
 
-* ✅ **One-by-One File Copying**: Transfers files individually for better error isolation.
+* ✅ **File-by-File Copying**: Transfers files individually for better error isolation.
 * 📦 **Video Compression**: Compresses video files on-the-fly using a target average bitrate (via FFMPEG).
 * 📁 **Auto File Organization**: Based on the file types, each file will be organized into respective folders.
     * Videos
@@ -21,20 +23,8 @@
 
     * Incremental backups
     * File verification using checksums
-    * UI/CLI options
+    * More CLI options
 
----
-
-## Example output folder structure
-
-```
-B:\backup\20250120\
-├── Videos\
-├── Images\
-├── Documents\
-├── Audio\
-└── Others\
-```
 ---
 
 # 🚀 Getting Started
@@ -46,21 +36,11 @@ B:\backup\20250120\
 
 1. **Download** the `backupcat4j.zip` archive.
 2. **Extract** the contents to any folder on your system.
-3. **Run** the executable script located in the `backupcat4j/bin` directory:
+3. **Run** the executable file `BackupCat4j.exe`
 
-  * **Windows:** Double-click `run.bat` or execute it from the command prompt.
-  * **Linux/macOS:** Open a terminal, navigate to `backupcat4j/bin`, and run `./run.sh`.
+*Executable will guide you through required inputs and launch the backup process with sensible defaults.*
 
-*Both scripts will guide you through required inputs and launch the backup process with sensible defaults.*
-
-```
-Enter source folder (default: D:\projects\temp\source):D:\projects\temp\mix
-Enter target folder (default: D:\projects\temp\destination):D:\projects\temp\destination
-Enter organize mode [FULL, IGNORING_FIRST_FOLDER, NONE] (default: FULL):IGNORING_FIRST_FOLDER
-Enter maximum bitrate for videos (default: 3000000):
-```
-
-4. **Result will look like**
+4. **Result should look like**
 
 ```declarative
 -------------------------------------------RESULT-----------------------------------------------
@@ -88,6 +68,16 @@ Time taken:
 ----------------------------------------COMPLETE------------------------------------------------
 ```
 
+Output folder structure
+```
+B:\backup\20250120\
+├── Videos\
+├── Images\
+├── Documents\
+├── Audio\
+└── Others\
+```
+
 ## Option 2: Run the JAR File Manually
 
 If you prefer to run the JAR directly with custom options, following below steps:
@@ -99,7 +89,7 @@ Make sure the following tools are installed:
 * [Java 24 (or higher)](https://jdk.java.net/)
 * [FFMPEG (latest version)](https://ffmpeg.org/download.html)
 
-### 2. Download the zip file and extract it
+### 2. Download the latest `jar` file
 
 ### 3. Run the java command
 
@@ -109,8 +99,8 @@ Replace the paths and options as needed.
 java -jar backupcat4j.jar \
 source="I:\media" \
 target="B:\backup" \
-ffmpeg="D:\ffmpeg\ffmpeg.exe" \
-ffprobe="D:\ffmpeg\ffprobe.exe" \
+ffmpeg="D:\ffmpeg-7.1.1-essentials_build\ffmpeg.exe" \
+ffprobe="D:\ffmpeg-7.1.1-essentials_build\ffprobe.exe" \
 organize=FULL \
 --compress \
 --resume \
@@ -133,7 +123,7 @@ Import as a **Maven** Java project.
 
 ### 3. Set Backup Options
 
-Modify the `main` method to configure your backup:
+Modify the `main` method in `App.java` to configure your backup:
 
 ```java
 BackupOptions backupOptions = BackupOptions.builder()
@@ -170,7 +160,7 @@ Pull requests and feature suggestions are welcome. Let’s make **BackupCat4j** 
 
 ---
 
-## ⚠️ Notes
+## ⚠️ Troubleshooting
 
 * Ensure the FFMPEG binary paths are correct and accessible.
 * Recommended to test on a small batch before running on large sets.
@@ -182,6 +172,7 @@ Pull requests and feature suggestions are welcome. Let’s make **BackupCat4j** 
 
 * [ ] Incremental backup (only changed files)
 * [ ] File type filter
+* [ ] Linux executable file
 * [ ] Dry-run mode
 * [ ] CLI interface improvements
 * [ ] Config file support (e.g., `backup.json`)

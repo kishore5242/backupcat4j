@@ -15,13 +15,13 @@
             <includes>
                 <include>backupcat4j.jar</include>
             </includes>
-            <outputDirectory>/</outputDirectory>
+            <outputDirectory>bin</outputDirectory>
         </fileSet>
 
-        <!-- Include FFmpeg binaries -->
+        <!-- Include binaries like ffmpeg, ffprobe ..-->
         <fileSet>
-            <directory>ffmpeg</directory>
-            <outputDirectory>ffmpeg</outputDirectory>
+            <directory>bin</directory>
+            <outputDirectory>bin</outputDirectory>
             <includes>
                 <include>**/*</include>
             </includes>
@@ -30,9 +30,9 @@
         <!-- Include scripts -->
         <fileSet>
             <directory>scripts</directory>
-            <outputDirectory>bin</outputDirectory>
+            <outputDirectory>/</outputDirectory>
             <includes>
-                <include>**/*.bat</include>
+                <include>**/*.exe</include>
                 <include>**/*.sh</include>
             </includes>
             <fileMode>0755</fileMode>

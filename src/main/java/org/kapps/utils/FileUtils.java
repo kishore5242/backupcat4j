@@ -6,6 +6,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.stream.Stream;
 
 public class FileUtils {
@@ -24,6 +26,7 @@ public class FileUtils {
     public static void createIfNotExists(Path path) {
         try {
             if (!Files.exists(path)) {
+                Files.createDirectories(path.getParent());
                 Files.createFile(path);
             }
         } catch (IOException e) {

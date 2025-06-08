@@ -1,8 +1,12 @@
 package org.kapps;
 
+import org.kapps.utils.LogInitializer;
+import org.slf4j.Logger;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 public class AppCLI {
+
+    private static final Logger logger = LogInitializer.initLogger(AppCLI.class);
 
     public static void main(String[] args) {
         // Boot the Spring context
@@ -12,8 +16,7 @@ public class AppCLI {
             // Run the actual logic
             executor.run(args);
         } catch (Exception e) {
-            System.err.println("Backup process failed: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Backup process failed", e);
             System.exit(1);
         }
     }

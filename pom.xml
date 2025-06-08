@@ -4,7 +4,7 @@
 
     <groupId>org.kapps</groupId>
     <artifactId>backupcat4j</artifactId>
-    <version>0.0.1</version>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <name>backupcat4j</name>
@@ -131,7 +131,7 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>3.6.0</version>
                 <configuration>
-                    <finalName>backupcat4j</finalName>
+                    <finalName>backupcat4j-${project.version}</finalName>
                     <appendAssemblyId>false</appendAssemblyId>
                     <descriptors>
                         <descriptor>src/assembly/zip.xml</descriptor>

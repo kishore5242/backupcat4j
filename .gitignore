@@ -2,8 +2,9 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-ffmpeg/**
-!ffmpeg/README.md
+bin/**
+!bin/README.md
+logs/**
 
 ### IntelliJ IDEA ###
 .idea/modules.xml
@@ -38,6 +39,3 @@ build/
 
 ### Mac OS ###
 .DS_Store
-
-## Progress file ##
-backupcat_progress.jsonl

@@ -158,11 +158,11 @@ public class VideoCompressor {
         }
 
         String ffmpegBinary = isWindows() ? "ffmpeg.exe" : "ffmpeg";
-        String ffmpegPath = Paths.get("ffmpeg", ffmpegBinary).toString();
+        String ffmpegPath = Paths.get("bin", ffmpegBinary).toString();
 
         File ffmpegFile = new File(ffmpegPath);
         if (!ffmpegFile.exists() || !ffmpegFile.canExecute()) {
-            throw new IllegalStateException("FFmpeg not found at " + ffmpegPath);
+            throw new IllegalStateException("ffmpeg not found at " + ffmpegPath);
         }
         return ffmpegPath;
     }
@@ -173,11 +173,11 @@ public class VideoCompressor {
         }
 
         String ffprobeBinary = isWindows() ? "ffprobe.exe" : "ffprobe";
-        String ffprobePath = Paths.get("ffprobe", ffprobeBinary).toString();
+        String ffprobePath = Paths.get("bin", ffprobeBinary).toString();
 
         File ffprobeFile = new File(ffprobePath);
         if (!ffprobeFile.exists() || !ffprobeFile.canExecute()) {
-            throw new IllegalStateException("FFprobe not found at " + ffprobePath);
+            throw new IllegalStateException("ffprobe not found at " + ffprobePath);
         }
         return ffprobePath;
     }
