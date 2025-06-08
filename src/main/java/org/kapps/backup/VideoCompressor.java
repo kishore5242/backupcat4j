@@ -9,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -82,8 +83,10 @@ public class VideoCompressor {
         String durationStr = metadata.get("duration");
         long totalDuration = (durationStr != null) ? Math.round(Double.parseDouble(durationStr)) : 0;
 
+        String ffmpegPath = resolveFfmpegPath(backupOptions);
+
         String[] command = {
-                backupOptions.getFfmpeg(),
+                ffmpegPath,
                 "-y",  // overwrite without prompt
                 "-i", inputFile.getAbsolutePath(),
                 "-vcodec", "libx264",
@@ -144,6 +147,25 @@ public class VideoCompressor {
             Thread.currentThread().interrupt();
             return String.format("Error during video compression - %s", e.getMessage());
         }
+    }
+
+    private String resolveFfmpegPath(BackupOptions options) {
+        if (options.getFfmpeg() != null && !options.getFfmpeg().isBlank()) {
+            return options.getFfmpeg();
+        }
+
+        String ffmpegBinary = isWindows() ? "ffmpeg.exe" : "ffmpeg";
+        String ffmpegPath = Paths.get("ffmpeg", ffmpegBinary).toString();
+
+        File ffmpegFile = new File(ffmpegPath);
+        if (!ffmpegFile.exists() || !ffmpegFile.canExecute()) {
+            throw new IllegalStateException("FFmpeg not found at " + ffmpegPath);
+        }
+        return ffmpegPath;
+    }
+
+    private boolean isWindows() {
+        return System.getProperty("os.name").toLowerCase().contains("win");
     }
 
     private double parseTimeToSeconds(String timeStr) {

@@ -13,6 +13,7 @@ public class AppCLI {
             executor.run(args);
         } catch (Exception e) {
             System.err.println("Backup process failed: " + e.getMessage());
+            e.printStackTrace();
             System.exit(1);
         }
     }

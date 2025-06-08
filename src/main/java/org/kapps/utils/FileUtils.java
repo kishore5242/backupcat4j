@@ -21,6 +21,16 @@ public class FileUtils {
         }
     }
 
+    public static void createIfNotExists(Path path) {
+        try {
+            if (!Files.exists(path)) {
+                Files.createFile(path);
+            }
+        } catch (IOException e) {
+            logger.error("Failed to create file", e);
+        }
+    }
+
     public static void recreate(Path path) {
         try {
             if (Files.exists(path)) {

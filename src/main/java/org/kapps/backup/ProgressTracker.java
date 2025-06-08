@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,6 +35,7 @@ public class ProgressTracker {
         this.totalSize = indexedFiles.stream().mapToLong(IndexedFile::getSize).sum();
         this.startTimeNanos = System.nanoTime();
         this.progressFile = Paths.get(System.getProperty("user.dir")).resolve("backupcat_progress.jsonl");
+        FileUtils.createIfNotExists(this.progressFile);
     }
 
     public List<IndexedFile> getPending(BackupOptions backupOptions) throws IOException {
