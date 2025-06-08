@@ -9,9 +9,6 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 
 import java.io.IOException;
 
-/**
- * Hello world!
- */
 public class App {
 
     private static final Logger logger = LoggerFactory.getLogger(App.class);
