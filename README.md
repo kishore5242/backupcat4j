@@ -26,16 +26,46 @@
 
 ---
 
-## 🛠 Prerequisites
+## 🚀 Getting Started
+
+### ⚒️ Prerequisites
 
 Make sure the following tools are installed:
 
 * [Java 24 (or higher)](https://jdk.java.net/)
 * [FFMPEG (latest version)](https://ffmpeg.org/download.html)
 
+### 1. Download the jar file
+
+### 2. Run the java command
+```declarative
+java -jar backupcat4j.jar \
+source="I:\media" \
+target="B:\backup" \
+ffmpeg="D:\ffmpeg\ffmpeg.exe" \
+ffprobe="D:\ffmpeg\ffprobe.exe" \
+organize=FULL \
+--compress \
+--resume \
+--replace \
+--bitrate=3000000
+```
+
+### 3. Output Directory Structure (Example)
+
+```
+B:\backup\20250120\
+├── Videos\
+├── Images\
+├── Documents\
+├── Audio\
+└── Others\
+```
 ---
 
-## 🚀 Getting Started
+## 🧑‍💻 Contributing
+
+Pull requests and feature suggestions are welcome. Let’s make **BackupCat4j** the go-to utility for organized, smart backups.
 
 ### 1. Clone the Project
 
@@ -73,27 +103,14 @@ Simply run the `main` method from your IDE.
 
 ---
 
-## 📂 Output Directory Structure (Example)
-
-```
-B:\backup\20250120\
-├── Videos\
-├── Images\
-├── Documents\
-├── Audio\
-└── Others\
-```
-
----
-
-## 🧰 Tools Used
+## 🛠️ Tools Used
 
 * **Java 24** – Core language
 * **FFMPEG / FFPROBE** – For video inspection and compression
 
 ---
 
-## ❗ Notes
+## ⚠️ Notes
 
 * Ensure the FFMPEG binary paths are correct and accessible.
 * Recommended to test on a small batch before running on large sets.
@@ -101,19 +118,13 @@ B:\backup\20250120\
 
 ---
 
-## 🗓 Roadmap
+## 🗓️ Roadmap
 
 * [ ] Incremental backup (only changed files)
 * [ ] Dry-run mode
-* [ ] CLI interface
+* [ ] CLI interface improvements
 * [ ] Config file support (e.g., `backup.json`)
 * [ ] Hash-based integrity verification
-
----
-
-## 🧑‍💻 Contributing
-
-Pull requests and feature suggestions are welcome. Let’s make **BackupCat4j** the go-to utility for organized, smart backups.
 
 ---
 
@@ -122,5 +133,3 @@ Pull requests and feature suggestions are welcome. Let’s make **BackupCat4j** 
 MIT License – *Feel free to use and modify with attribution.*
 
 ---
-
-Let me know if you want this published as a `README.md` in a GitHub project structure or want help creating a `.gitignore`, `pom.xml`, or Gradle build file too.
