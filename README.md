@@ -50,6 +50,41 @@ B:\backup\20250120\
 
 *Both scripts will guide you through required inputs and launch the backup process with sensible defaults.*
 
+```
+Enter source folder (default: D:\projects\temp\source):D:\projects\temp\mix
+Enter target folder (default: D:\projects\temp\destination):D:\projects\temp\destination
+Enter organize mode [FULL, IGNORING_FIRST_FOLDER, NONE] (default: FULL):IGNORING_FIRST_FOLDER
+Enter bitrate (default: 3000000):
+```
+
+4. **Result will look like**
+
+```declarative
+-------------------------------------------RESULT-----------------------------------------------
+Actions performed:
+        COMPRESS              : 5/5
+        COPY                  : 18/18
+
+Processed by:
+        Video backup agent    : 6/6
+        Default backup agent  : 17/17
+
+File counts:
+        Indexed               : 23
+        Previously backed up  : 0
+        Clashes handles       : 0
+        Backed up             : 23/23
+        Failed                : 0
+
+Folder sizes:
+        Original              : 165.2 MB
+        Backup                : 56.3 MB
+
+Time taken:
+        Total                 : 21.26 s
+----------------------------------------COMPLETE------------------------------------------------
+```
+
 ## Option 2: Run the JAR File Manually
 
 If you prefer to run the JAR directly with custom options, following below steps:
