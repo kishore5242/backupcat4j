@@ -11,7 +11,6 @@
 * 🔁 **Resume Support**: Resumes from the last successful file in case of interruptions.
 * 📦 **Video Compression**: Compresses video files on-the-fly using a target average bitrate (via FFMPEG).
 * 📁 **Auto File Organization**:
-
     * Videos
     * Images
     * Documents
@@ -28,16 +27,16 @@
 
 ## 🚀 Getting Started
 
-### ⚒️ Prerequisites
+### 1. Prerequisites
 
 Make sure the following tools are installed:
 
 * [Java 24 (or higher)](https://jdk.java.net/)
 * [FFMPEG (latest version)](https://ffmpeg.org/download.html)
 
-### 1. Download the jar file
+### 2. Download the jar file
 
-### 2. Run the java command
+### 3. Run the java command
 ```declarative
 java -jar backupcat4j.jar \
 source="I:\media" \
@@ -51,21 +50,19 @@ organize=FULL \
 --bitrate=3000000
 ```
 
-### 3. Output Directory Structure (Example)
+### 4. Output Directory Structure (Example)
 
 ```
 B:\backup\20250120\
-├── Videos\
-├── Images\
-├── Documents\
-├── Audio\
-└── Others\
+├── VIDEO\
+├── IMAGE\
+├── DOCUMENT\
+├── AUDIO\
+└── OTHER\
 ```
 ---
 
 ## 🧑‍💻 Contributing
-
-Pull requests and feature suggestions are welcome. Let’s make **BackupCat4j** the go-to utility for organized, smart backups.
 
 ### 1. Clone the Project
 
@@ -76,7 +73,7 @@ cd BackupCat4j
 
 ### 2. Open in Your IDE
 
-Import as a **Maven** or **Gradle** Java project (depending on your setup).
+Import as a **Maven** Java project.
 
 ### 3. Set Backup Options
 
@@ -100,6 +97,13 @@ BackupOptions backupOptions = BackupOptions.builder()
 ### 4. Run the Application
 
 Simply run the `main` method from your IDE.
+
+### 5. Make code changes
+
+Feel free to fix bugs or make improvements as needed. It would also be greatly appreciated if you could include relevant **JUnit tests** to ensure your changes are reliable and well-tested.
+
+### 6. Create pull requests
+Pull requests and feature suggestions are welcome. Let’s make **BackupCat4j** the go-to utility for organized, smart backups.
 
 ---
 

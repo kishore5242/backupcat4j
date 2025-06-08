@@ -43,29 +43,30 @@ public class BackupCLIExecutorTest {
         Directories result = TestUtils.extractZipToTemp("src/test/resources/samples/simple.zip");
         Path source = result.sourceDir();
         Path target = result.targetDir();
+        try {
+            // Construct CLI arguments
+            String[] args = {
+                    "source=" + source.toString(),
+                    "target=" + target.toString(),
+                    "ffmpeg=D:\\apps\\ffmpeg\\bin\\ffmpeg.exe",
+                    "ffprobe=D:\\apps\\ffmpeg\\bin\\ffprobe.exe",
+                    "organize=NONE",
+                    "--replace",
+                    "--compress",
+                    "--resume",
+                    "--bitrate=500000"
+            };
 
-        // Construct CLI arguments
-        String[] args = {
-                "source=" + source.toString(),
-                "target=" + target.toString(),
-                "ffmpeg=D:\\apps\\ffmpeg\\bin\\ffmpeg.exe",
-                "ffprobe=D:\\apps\\ffmpeg\\bin\\ffprobe.exe",
-                "organize=NONE",
-                "--replace",
-                "--compress",
-                "--resume",
-                "--bitrate=500000"
-        };
+            // Execute
+            new BackupCLIExecutor(context).run(args);
 
-        // Execute
-        new BackupCLIExecutor(context).run(args);
-
-        // Verify results
-        assertTrue(Files.exists(target.resolve("media/mix/pineapple.mp4")));
-        assertTrue(Files.exists(target.resolve("media/pics/mr.serious.jpg")));
-        assertTrue(Files.exists(target.resolve("lorem_doc.docx")));
-        assertTrue(Files.exists(target.resolve("media/message.json")));
-
-        FileUtils.deleteRecursively(result.tempBaseDir());
+            // Verify results
+            assertTrue(Files.exists(target.resolve("media/mix/pineapple.mp4")));
+            assertTrue(Files.exists(target.resolve("media/pics/mr.serious.jpg")));
+            assertTrue(Files.exists(target.resolve("lorem_doc.docx")));
+            assertTrue(Files.exists(target.resolve("media/message.json")));
+        } finally {
+            FileUtils.deleteRecursively(result.tempBaseDir());
+        }
     }
 }

@@ -2,6 +2,7 @@ package org.kapps.utils;
 
 import org.kapps.backup.BackupOptions;
 import org.kapps.backup.OrganizeMode;
+import org.kapps.backup.OrganizedFolder;
 import org.kapps.index.IndexedFile;
 import org.springframework.util.StringUtils;
 
@@ -19,7 +20,7 @@ public class BackupUtils {
         if (backupOptions.getOrganize().equals(OrganizeMode.FULL)) {
             targetPath = Paths.get(
                     backupOptions.getTarget(),
-                    indexedFile.getFileType().name(),
+                    OrganizedFolder.forFileType(indexedFile.getFileType()),
                     sourcePath.getFileName().toString()
             );
         } else if (backupOptions.getOrganize().equals(OrganizeMode.IGNORING_FIRST_FOLDER)) {

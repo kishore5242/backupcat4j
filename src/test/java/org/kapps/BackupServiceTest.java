@@ -121,10 +121,10 @@ public class BackupServiceTest {
             backupService.backupFiles(backupOptions);
 
             // Asserts
-            assertTrue(Files.exists(Paths.get(target.toString(), "VIDEO/pineapple.mp4")));
-            assertTrue(Files.exists(Paths.get(target.toString(), "IMAGE/mr.serious.jpg")));
-            assertTrue(Files.exists(Paths.get(target.toString(), "DOCUMENT/lorem_doc.docx")));
-            assertTrue(Files.exists(Paths.get(target.toString(), "OTHER/message.json")));
+            assertTrue(Files.exists(Paths.get(target.toString(), "Videos/pineapple.mp4")));
+            assertTrue(Files.exists(Paths.get(target.toString(), "Images/mr.serious.jpg")));
+            assertTrue(Files.exists(Paths.get(target.toString(), "Documents/lorem_doc.docx")));
+            assertTrue(Files.exists(Paths.get(target.toString(), "Others/message.json")));
 
         } finally {
             FileUtils.deleteRecursively(result.tempBaseDir());
@@ -150,12 +150,12 @@ public class BackupServiceTest {
             backupService.backupFiles(backupOptions);
 
             // Asserts
-            assertTrue(Files.exists(Paths.get(target.toString(), "VIDEO/space.mp4")));
-            assertTrue(Files.exists(Paths.get(target.toString(), "VIDEO/space_1.mp4")));
-            assertTrue(Files.exists(Paths.get(target.toString(), "VIDEO/space_2.mp4")));
-            assertTrue(Files.exists(Paths.get(target.toString(), "IMAGE/kitty.jpg")));
-            assertTrue(Files.exists(Paths.get(target.toString(), "IMAGE/kitty_1.jpg")));
-            assertTrue(Files.exists(Paths.get(target.toString(), "IMAGE/kitty_2.jpg")));
+            assertTrue(Files.exists(Paths.get(target.toString(), "Videos/space.mp4")));
+            assertTrue(Files.exists(Paths.get(target.toString(), "Videos/space_1.mp4")));
+            assertTrue(Files.exists(Paths.get(target.toString(), "Videos/space_2.mp4")));
+            assertTrue(Files.exists(Paths.get(target.toString(), "Images/kitty.jpg")));
+            assertTrue(Files.exists(Paths.get(target.toString(), "Images/kitty_1.jpg")));
+            assertTrue(Files.exists(Paths.get(target.toString(), "Images/kitty_2.jpg")));
 
         } finally {
             FileUtils.deleteRecursively(result.tempBaseDir());
@@ -227,12 +227,12 @@ public class BackupServiceTest {
             backupService.backupFiles(backupOptions);
 
             // previously processed
-            assertFalse(Files.exists(Paths.get(target.toString(), "OTHER/message.json")));
-            assertFalse(Files.exists(Paths.get(target.toString(), "OTHER/lorem_doc.docx")));
+            assertFalse(Files.exists(Paths.get(target.toString(), "Others/message.json")));
+            assertFalse(Files.exists(Paths.get(target.toString(), "Others/lorem_doc.docx")));
             // resumed
-            assertTrue(Files.exists(Paths.get(target.toString(), "VIDEO/pineapple.mp4")));
-            assertTrue(Files.exists(Paths.get(target.toString(), "IMAGE/mr.serious.jpg")));
-            assertTrue(Files.exists(Paths.get(target.toString(), "OTHER/hello.txt")));
+            assertTrue(Files.exists(Paths.get(target.toString(), "Videos/pineapple.mp4")));
+            assertTrue(Files.exists(Paths.get(target.toString(), "Images/mr.serious.jpg")));
+            assertTrue(Files.exists(Paths.get(target.toString(), "Others/hello.txt")));
 
         } finally {
             FileUtils.deleteRecursively(result.tempBaseDir());

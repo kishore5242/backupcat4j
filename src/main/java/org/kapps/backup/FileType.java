@@ -5,7 +5,7 @@ public enum FileType {
     VIDEO,
     DOCUMENT,
     AUDIO,
-    OTHER
+    OTHER;
 }
 
 
