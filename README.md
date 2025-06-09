@@ -70,7 +70,7 @@ Make sure the following tools are installed:
 Replace the paths and options as needed.
 
 ```bash
-java -jar backupcat4j.jar \
+java -jar backupcat4j-fx.jar \
 source="I:\media" \
 target="B:\backup" \
 ffmpeg="D:\ffmpeg-7.1.1-essentials_build\ffmpeg.exe" \
