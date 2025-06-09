@@ -1,5 +1,5 @@
-<p style="text-align: center;">
-  <img src="src/main/resources/app-icon.ico" alt="BackupCat4j logo" width="128">
+<p>
+  <img src="src/main/resources/app-icon.png" alt="BackupCat4j logo">
 </p>
 
 # 🐾 BackupCat4j
@@ -38,8 +38,9 @@
 3. **Run** `BackupCat4j.exe`. The app will open in a window and guide you through the required inputs, using sensible defaults.
 4. **Result** will be printed in the window.
 
-![BackupCat4j UI](src/main/resources/app-screenshot.png)
-
+<p>
+  <img src="src/main/resources/app-screenshot.png" alt="BackupCat4j App screenshot" width="600px">
+</p>
 
 Output folder structure
 ```
