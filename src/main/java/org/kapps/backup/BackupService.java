@@ -3,6 +3,7 @@ package org.kapps.backup;
 import com.google.common.base.Stopwatch;
 import org.kapps.index.FileIndexer;
 import org.kapps.index.IndexedFile;
+import org.kapps.progress.ProgressTracker;
 import org.kapps.utils.BackupUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,7 +93,7 @@ public class BackupService {
             List<BackupResult> backupResults,
             Stopwatch sw
     ) {
-        logger.info("-------------------------------------------RESULT-----------------------------------------------");
+        logger.info("------------------------------------RESULT-----------------------------------------");
 
         // Errors
         Set<BackupResult> failed = backupResults.stream().filter(result -> !result.getStatus()).collect(Collectors.toSet());
@@ -109,7 +110,7 @@ public class BackupService {
         Map<BackupAction, List<BackupResult>> groupedByAction = backupResults.stream().collect(Collectors.groupingBy(BackupResult::getBackupAction));
         groupedByAction.forEach((action, results) -> {
             long success = results.stream().filter(BackupResult::getStatus).count();
-            logger.info(String.format("\t%-22s:\t%d/%d", action, success, results.size()));
+            logger.info(String.format("\t%s:\t%d/%d", fixedLength(action.toString(), 30), success, results.size()));
         });
 
 
@@ -119,34 +120,44 @@ public class BackupService {
         Map<String, List<BackupResult>> grouppedByAgent = backupResults.stream().collect(Collectors.groupingBy(BackupResult::getAgent));
         grouppedByAgent.forEach((agent, results) -> {
             long success = results.stream().filter(BackupResult::getStatus).count();
-            logger.info(String.format("\t%-22s:\t%d/%d", agent, success, results.size()));
+            logger.info(String.format("\t%s:\t%d/%d", fixedLength(agent, 30), success, results.size()));
         });
 
         logger.info("");
         logger.info("File counts:");
-        logger.info("\tIndexed               :\t{}", indexedFiles.size());
+        logger.info("\t{}:\t{}", fixedLength("Indexed", 30), indexedFiles.size());
         int previous = indexedFiles.size() - pendingIndexedFiles.size();
-        logger.info("\tPreviously backed up  :\t{}", previous);
+        logger.info("\t{}:\t{}", fixedLength("Previously backed up", 30), previous);
         // clashes
         long clashes = pendingIndexedFiles.stream().filter(i -> StringUtils.hasLength(i.getSuffix())).count();
-        logger.info("\tClashes handles       :\t{}", clashes);
+        logger.info("\t{}:\t{}", fixedLength("Clashes handled", 30), clashes);
         // total
         long backedUpCount = backupResults.stream().filter(BackupResult::getStatus).count();
-        logger.info("\tBacked up             :\t{}/{}", backedUpCount, pendingIndexedFiles.size());
-        logger.info("\tFailed                :\t{}", failed.size());
+        logger.info("\t{}:\t{}/{}", fixedLength("Backed up", 30), backedUpCount, pendingIndexedFiles.size());
+        logger.info("\t{}:\t{}", fixedLength("Failed", 30), failed.size());
 
         // size
         long originalSize = indexedFiles.stream().mapToLong(IndexedFile::getSize).sum();
         long backupSize = targetIndexedFiles.stream().mapToLong(IndexedFile::getSize).sum();
         logger.info("");
         logger.info("Folder sizes:");
-        logger.info("\tOriginal              :\t{}", BackupUtils.humanReadableByteCount(originalSize));
-        logger.info("\tBackup                :\t{}", BackupUtils.humanReadableByteCount(backupSize));
+        logger.info("\t{}:\t{}", fixedLength("Original", 30), BackupUtils.humanReadableByteCount(originalSize));
+        logger.info("\t{}:\t{}", fixedLength("Backup", 30), BackupUtils.humanReadableByteCount(backupSize));
 
         // time
         logger.info("");
         logger.info("Time taken:");
-        logger.info("\tTotal                 :\t{}", sw.stop());
-        logger.info("----------------------------------------COMPLETE------------------------------------------------");
+        logger.info("\t{}:\t{}", fixedLength("Total", 30), sw.stop());
+        logger.info("-----------------------------------------------------------------------------------");
     }
+
+    private static String fixedLength(String input, int length) {
+        if (input == null) input = "";
+        if (input.length() > length) {
+            return input.substring(0, length);  // Truncate
+        } else {
+            return String.format("%-" + length + "s", input);  // Pad with spaces
+        }
+    }
+
 }

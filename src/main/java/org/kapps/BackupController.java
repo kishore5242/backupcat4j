@@ -10,14 +10,16 @@ import javafx.stage.Stage;
 import org.kapps.backup.BackupOptions;
 import org.kapps.backup.BackupService;
 import org.kapps.backup.OrganizeMode;
-import org.kapps.logger.TextAreaAppender;
+import org.kapps.progress.TextAreaAppender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -67,6 +69,10 @@ public class BackupController {
         maxBitRate.setDisable(false);
         maxBitRate.setText("3000000");
 
+        addErrorClearingListener(sourceInput);
+        addErrorClearingListener(destinationInput);
+        addErrorClearingListener(maxBitRate);
+
         // Initiate console log
         TextAreaAppender appender = new TextAreaAppender();
         appender.setContext((LoggerContext) LoggerFactory.getILoggerFactory());
@@ -109,15 +115,25 @@ public class BackupController {
 
     @FXML
     void submit(MouseEvent event) {
-        // Read inputs
-        Path ffmpegPath = Paths.get("ffmpeg", "ffmpeg.exe").toAbsolutePath();
-        logger.info("ffmpeg: {}", ffmpegPath);
-        Path ffprobePath = Paths.get("ffmpeg", "ffprobe.exe").toAbsolutePath();
-        logger.info("ffprobe: {}", ffprobePath);
         String source = sourceInput.getText();
         String destination = destinationInput.getText();
+        if (!StringUtils.hasLength(source)) {
+            consoleArea.setText("ERROR: Source not selected");
+            return;
+        } else if (!StringUtils.hasLength(destination)) {
+            consoleArea.setText("ERROR: Destination not selected");
+            return;
+        }
+
         boolean compressVideos = compressCheckBox.isSelected();
-        long maxAvgBitRate = Long.parseLong(maxBitRate.getText());
+        long maxAvgBitRate;
+        try {
+            maxAvgBitRate = Long.parseLong(maxBitRate.getText());
+        } catch (Exception e) {
+            consoleArea.setText("ERROR: Maximum bitrate is not a number - " + maxBitRate.getText());
+            return;
+        }
+
         OrganizeMode organizeMode;
         switch (organizeChoiceBox.getValue()) {
             case "File type" -> organizeMode = OrganizeMode.FULL;
@@ -126,12 +142,33 @@ public class BackupController {
         }
         boolean skipOtherFileTypes = skipOthers.isSelected();
 
+        Path ffmpegPath;
+        Path ffprobePath;
+        Path currentPath = Paths.get("/").toAbsolutePath();
+        if(currentPath.endsWith("bin")) {
+            ffmpegPath = Paths.get("ffmpeg", "ffmpeg.exe").toAbsolutePath();
+            ffprobePath = Paths.get("ffmpeg", "ffprobe.exe").toAbsolutePath();
+        } else {
+            ffmpegPath = Paths.get("bin/ffmpeg", "ffmpeg.exe").toAbsolutePath();
+            ffprobePath = Paths.get("bin/ffmpeg", "ffprobe.exe").toAbsolutePath();
+        }
+
+        if (!Files.exists(ffmpegPath)) {
+            consoleArea.setText("ERROR: ffmpeg missing at " + ffmpegPath);
+            return;
+        } else if (!Files.exists(ffprobePath)) {
+            consoleArea.setText("ERROR: ffprobe missing at " + ffprobePath);
+            return;
+        }
+        logger.info("ffmpeg: {}", ffmpegPath);
+        logger.info("ffprobe: {}", ffprobePath);
+
         BackupOptions backupOptions = BackupOptions.builder()
                 .source(source)
                 .target(destination)
                 .replace(true)
-                .ffmpeg("D:\\apps\\ffmpeg-7.1.1-essentials_build\\bin\\ffmpeg.exe")
-                .ffprobe("D:\\apps\\ffmpeg-7.1.1-essentials_build\\bin\\ffprobe.exe")
+                .ffmpeg(ffmpegPath.toString())
+                .ffprobe(ffprobePath.toString())
                 .compressVideos(compressVideos)
                 .maxAvgBitRate(maxAvgBitRate)
                 .organize(organizeMode)
@@ -141,7 +178,7 @@ public class BackupController {
 
         consoleArea.clear();
         backupButton.setDisable(true);
-
+        consoleArea.requestFocus();
         // Backup
         new Thread(() -> {
             try {
@@ -152,6 +189,13 @@ public class BackupController {
                 backupButton.setDisable(false);
             }
         }).start();
+    }
+
+    private void addErrorClearingListener(TextField field) {
+        field.textProperty().addListener((obs, oldText, newText) -> {
+            consoleArea.setText("");
+            field.setStyle(""); // optional: clear red border
+        });
     }
 
     private static Stage getStage(MouseEvent event) {

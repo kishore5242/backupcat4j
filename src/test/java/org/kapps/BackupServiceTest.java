@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.kapps.backup.*;
 import org.kapps.index.FileIndexer;
 import org.kapps.index.IndexedFile;
+import org.kapps.progress.ProgressTracker;
 import org.kapps.utils.Directories;
 import org.kapps.utils.FileUtils;
 import org.kapps.utils.TestUtils;

@@ -1,7 +1,9 @@
-package org.kapps.backup;
+package org.kapps.progress;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.input.ReversedLinesFileReader;
+import org.kapps.backup.BackupOptions;
+import org.kapps.backup.BackupResult;
 import org.kapps.index.FileIndexer;
 import org.kapps.index.IndexedFile;
 import org.kapps.utils.BackupUtils;
@@ -10,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

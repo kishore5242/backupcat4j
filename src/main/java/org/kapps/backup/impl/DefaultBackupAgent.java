@@ -39,6 +39,7 @@ public class DefaultBackupAgent implements BackupAgent {
             Path targetPath = BackupUtils.getDefaultTargetPath(indexedFile, backupOptions);
 
             if (Files.exists(targetPath)) {
+                logger.info("File already exists: {}", indexedFile.getPath());
                 return resultBuilder
                         .backupAction(SKIP)
                         .status(true)
