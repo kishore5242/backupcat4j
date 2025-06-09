@@ -117,7 +117,7 @@ public class ProgressTracker {
                 ? BackupUtils.formatSecondsToHHMMSS(remainingSeconds)
                 : "Unknown";
 
-        logger.info("---------------------------------------------------------------------------------- [ Files: {}/{} ] [ {}% ] [ ETA: {} ]",
+        logger.info("--Progress------- [ Files: {}/{} ] |{}|% [ ETA: {} ]",
                 completedFiles, indexedFiles.size(),
                 String.format("%.2f", percentage),
                 timeStr

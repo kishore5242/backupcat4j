@@ -1,4 +1,6 @@
-![BackupCat4j logo](src/main/resources/app-icon.ico)
+<p>
+  <img src="src/main/resources/app-icon.png" alt="BackupCat4j logo">
+</p>
 
 # 🐾 BackupCat4j
 
@@ -29,41 +31,16 @@
 
 # 🚀 Getting Started
 
-## Requires Java
-* [Java 24 (or higher)](https://jdk.java.net/)
-
-## Option 1: Just Run the Executable
+## Option 1: Run the Executable
 
 1. **Download** the latest `backupcat4j-x.x.x.zip` from [here](https://github.com/kishore5242/backupcat4j/releases)
 2. **Extract** the contents to any folder on your system.
 3. **Run** `BackupCat4j.exe`. The app will open in a window and guide you through the required inputs, using sensible defaults.
-4. **Result** should look like this once completed.
+4. **Result** will be printed in the window.
 
-```declarative
--------------------------------------------RESULT-----------------------------------------------
-Actions performed:
-        COMPRESS              : 5/5
-        COPY                  : 18/18
-
-Processed by:
-        Video backup agent    : 6/6
-        Default backup agent  : 17/17
-
-File counts:
-        Indexed               : 23
-        Previously backed up  : 0
-        Clashes handles       : 0
-        Backed up             : 23/23
-        Failed                : 0
-
-Folder sizes:
-        Original              : 165.2 MB
-        Backup                : 56.3 MB
-
-Time taken:
-        Total                 : 21.26 s
-----------------------------------------COMPLETE------------------------------------------------
-```
+<p>
+  <img src="src/main/resources/app-screenshot.png" alt="BackupCat4j App screenshot" width="600px">
+</p>
 
 Output folder structure
 ```
@@ -75,7 +52,7 @@ B:\backup\20250120\
 └── Others\
 ```
 
-## Option 2: Run the JAR File Manually
+## Option 2: Command Line Interface
 
 If you prefer to run the JAR directly with custom options, following below steps:
 
@@ -92,7 +69,7 @@ Make sure the following tools are installed:
 
 Replace the paths and options as needed.
 
-```declarative
+```bash
 java -jar backupcat4j.jar \
 source="I:\media" \
 target="B:\backup" \
@@ -174,3 +151,5 @@ Pull requests and feature suggestions are welcome. Let’s make **BackupCat4j** 
 * [ ] CLI interface improvements
 * [ ] Config file support (e.g., `backup.json`)
 * [ ] Hash-based integrity verification
+
+---
