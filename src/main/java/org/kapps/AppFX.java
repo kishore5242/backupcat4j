@@ -4,6 +4,7 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import org.kapps.utils.LogInitializer;
 import org.slf4j.Logger;
@@ -29,11 +30,12 @@ public class AppFX extends Application {
 
         // Let Spring manage controllers
         loader.setControllerFactory(context::getBean);
-
         Parent root = loader.load();
 
-        stage.setScene(new Scene(root));
+        Image icon = new Image(getClass().getResourceAsStream("/app-icon.png"));
+        stage.getIcons().add(icon);
         stage.setTitle("BackupCat4j");
+        stage.setScene(new Scene(root));
         stage.show();
     }
 

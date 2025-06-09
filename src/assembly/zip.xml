@@ -13,7 +13,7 @@
         <fileSet>
             <directory>${project.build.directory}</directory>
             <includes>
-                <include>backupcat4j-*.jar</include>
+                <include>backupcat4j-fx.jar</include>
             </includes>
             <outputDirectory>bin</outputDirectory>
         </fileSet>
