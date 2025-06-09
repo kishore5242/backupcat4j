@@ -16,3 +16,13 @@ jlink \
   --no-man-pages
 ```
 Above command create a `jre` folder here
+
+### Running the JavaFX jar file
+
+```declarative
+"D:\projects\idea\backupcat4j\bin\jre\bin\java.exe" \
+  --enable-native-access=ALL-UNNAMED \
+  --add-modules javafx.controls,javafx.fxml \
+  -cp backupcat4j-fx.jar \
+  org.kapps.AppUI
+```
