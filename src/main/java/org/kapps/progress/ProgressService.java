@@ -10,6 +10,7 @@ import org.kapps.index.IndexedFile;
 import org.kapps.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedWriter;
@@ -27,6 +28,9 @@ import java.util.Map;
 public class ProgressService {
 
     private static final Logger logger = LoggerFactory.getLogger(ProgressService.class);
+
+    @Autowired
+    private FileIndexer fileIndexer;
 
     private final ObjectMapper mapper = new ObjectMapper();
     private Path progressFile;
@@ -94,7 +98,7 @@ public class ProgressService {
                 return this.indexedFiles;
             } else {
                 // check if it was completed previously
-                List<IndexedFile> slice = FileIndexer.slice(indexedFiles, lastResult.getIndexedFile().getPath());
+                List<IndexedFile> slice = fileIndexer.slice(indexedFiles, lastResult.getIndexedFile().getPath());
                 if (slice.size() == indexedFiles.size()) {
                     // start from beginning
                     return this.indexedFiles;

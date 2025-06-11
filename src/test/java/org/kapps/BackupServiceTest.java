@@ -34,6 +34,9 @@ public class BackupServiceTest {
     @Autowired
     ProgressService progressService;
 
+    @Autowired
+    FileIndexer fileIndexer;
+
     @MockitoBean
     VideoCompressor videoCompressor;
 
@@ -213,7 +216,7 @@ public class BackupServiceTest {
                     .build();
 
             // Create a last run file
-            List<IndexedFile> indexedFiles = FileIndexer.indexFiles(backupOptions);
+            List<IndexedFile> indexedFiles = fileIndexer.indexFiles(backupOptions);
 
             progressService.start(indexedFiles, backupOptions);
 

@@ -32,13 +32,16 @@ public class BackupService {
 
     private final BackupAgentFactory agentFactory;
     private final ProgressService progressService;
+    private final FileIndexer fileIndexer;
     private final Path backupOptionsFilePath;
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Autowired
-    public BackupService(BackupAgentFactory agentFactory, ProgressService progressService) {
+    public BackupService(BackupAgentFactory agentFactory, ProgressService progressService,
+                         FileIndexer fileIndexer) {
         this.agentFactory = agentFactory;
         this.progressService = progressService;
+        this.fileIndexer = fileIndexer;
         this.backupOptionsFilePath = Paths.get(System.getProperty("user.dir")).resolve("config/options.json");
         FileUtils.createIfNotExists(this.backupOptionsFilePath);
     }
@@ -77,16 +80,16 @@ public class BackupService {
         }
 
         // index target
-        List<IndexedFile> targetIndexedFiles = FileIndexer.indexTargetFiles(backupOptions);
+        List<IndexedFile> targetIndexedFiles = fileIndexer.indexTargetFiles(backupOptions);
 
         // print results
         logBackupResults(pendingIndexedFiles, indexedFiles, targetIndexedFiles, backupResults, sw);
     }
 
     private List<IndexedFile> index(BackupOptions backupOptions) throws IOException {
-        List<IndexedFile> indexedFiles = FileIndexer.indexFiles(backupOptions);
-        FileIndexer.logFileCountsByFileType(indexedFiles);
-        FileIndexer.logFileCountsByMime(indexedFiles);
+        List<IndexedFile> indexedFiles = fileIndexer.indexFiles(backupOptions);
+        fileIndexer.logFileCountsByFileType(indexedFiles);
+        fileIndexer.logFileCountsByMime(indexedFiles);
 
         // Filter/Skip
         if (backupOptions.isSkipOthers()) {

@@ -3,9 +3,12 @@ package org.kapps.index;
 import org.kapps.backup.BackupOptions;
 import org.kapps.backup.FileType;
 import org.kapps.backup.OrganizeMode;
+import org.kapps.progress.ProgressService;
 import org.kapps.utils.MimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -14,11 +17,15 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+@Component
 public class FileIndexer {
 
     private static final Logger logger = LoggerFactory.getLogger(FileIndexer.class);
 
-    public static List<IndexedFile> indexFiles(BackupOptions backupOptions) throws IOException {
+    @Autowired
+    private ProgressService progressService;
+
+    public List<IndexedFile> indexFiles(BackupOptions backupOptions) throws IOException {
         List<IndexedFile> indexedFiles = new ArrayList<>();
 
         String source = backupOptions.getSource();
@@ -52,6 +59,7 @@ public class FileIndexer {
         for (Path path : files) {
             int percentage = (i.get() * 100) / total;
             System.out.print("\rIndexing... [ " + percentage + "% ]");
+            progressService.setSubPercent("indexing  ", (double) percentage);
             try {
                 BasicFileAttributes attr = Files.readAttributes(path, BasicFileAttributes.class);
                 long size = attr.size();
@@ -96,7 +104,7 @@ public class FileIndexer {
         return indexedFiles;
     }
 
-    public static List<IndexedFile> indexTargetFiles(BackupOptions backupOptions) throws IOException {
+    public List<IndexedFile> indexTargetFiles(BackupOptions backupOptions) throws IOException {
         List<IndexedFile> indexedFiles = new ArrayList<>();
 
         String target = backupOptions.getTarget();
@@ -158,7 +166,7 @@ public class FileIndexer {
         return indexedFiles;
     }
 
-    public static List<IndexedFile> slice(List<IndexedFile> indexedFiles, Path path) {
+    public List<IndexedFile> slice(List<IndexedFile> indexedFiles, Path path) {
         int index = -1;
         for (int i = 0; i < indexedFiles.size(); i++) {
             if (path.equals(indexedFiles.get(i).getPath())) {
@@ -171,7 +179,7 @@ public class FileIndexer {
         return indexedFiles.subList(index + 1, indexedFiles.size());
     }
 
-    public static void logFileCountsByMime(List<IndexedFile> indexedFiles) {
+    public void logFileCountsByMime(List<IndexedFile> indexedFiles) {
         Map<String, List<IndexedFile>> groupedFiles = indexedFiles.stream().collect(Collectors.groupingBy(IndexedFile::getMimeType));
         groupedFiles.forEach((mimeType, files) -> {
             logger.info("Found {} {} files", files.size(), mimeType);
@@ -179,7 +187,7 @@ public class FileIndexer {
         logger.info("Total: {} files", indexedFiles.size());
     }
 
-    public static void logFileCountsByFileType(List<IndexedFile> indexedFiles) {
+    public void logFileCountsByFileType(List<IndexedFile> indexedFiles) {
         Map<FileType, List<IndexedFile>> groupedFiles = indexedFiles.stream().collect(Collectors.groupingBy(IndexedFile::getFileType));
         groupedFiles.forEach((mimeType, files) -> {
             logger.info("Found {} {} files", files.size(), mimeType);
