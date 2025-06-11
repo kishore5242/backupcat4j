@@ -1,7 +1,7 @@
 package org.kapps.backup;
 
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.kapps.progress.ProgressService;
-import org.kapps.utils.BackupUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,10 +37,6 @@ public class VideoCompressor {
             long avgBitrate = (durationSeconds > 0)
                     ? (fileSizeBytes * 8 / durationSeconds) // bits/sec
                     : 0;
-
-            logger.info("Codec: {}, Duration: {}s, File Size: {} bytes, Avg Bitrate: {} bps",
-                    codec, durationSeconds, fileSizeBytes, avgBitrate);
-
             boolean codecOk = TARGET_CODECS.contains(codec);
             boolean bitrateOk = avgBitrate > 0 && avgBitrate <= backupOptions.getMaxAvgBitRate();
 
@@ -86,8 +82,6 @@ public class VideoCompressor {
     }
 
     public String compressVideo(File inputFile, File outputFile, Map<String, String> metadata, BackupOptions backupOptions) {
-        logger.info("compressing video...");
-
         String durationStr = metadata.get("duration");
         long totalDuration = (durationStr != null) ? Math.round(Double.parseDouble(durationStr)) : 0;
 
@@ -123,8 +117,6 @@ public class VideoCompressor {
                         double processedSeconds = parseTimeToSeconds(timeStr);
                         double percent = (processedSeconds / totalDuration) * 100;
 
-                        progressService.setSubPercent(percent);
-
                         long now = System.currentTimeMillis();
                         double elapsedSeconds = (now - startTimeMillis) / 1000.0;
 
@@ -133,18 +125,18 @@ public class VideoCompressor {
                             double estimatedTotalTime = (elapsedSeconds / processedSeconds) * totalDuration;
                             double remainingTime = estimatedTotalTime - elapsedSeconds;
 
-                            String remainingStr = BackupUtils.formatSecondsToHHMMSS(remainingTime);
-                            System.out.printf("\r[ ETA: %s ] [ %3.0f%% ]", remainingStr, percent);
-                            System.out.flush();
+                            String remainingStr = DurationFormatUtils.formatDuration(
+                                    (long) remainingTime * 1000,
+                                    "H'h' m'm' s's'"
+                            );
+                            progressService.setSubPercent("compressing  " + remainingStr, percent);
                         }
                     }
                 }
-                System.out.println(" ✓");
             }
 
             int exitCode = process.waitFor();
             if (exitCode == 0) {
-                logger.info("Video compression successful");
                 return "";
             } else {
                 String error = String.format("Video compression failed with exit code: %s", exitCode);

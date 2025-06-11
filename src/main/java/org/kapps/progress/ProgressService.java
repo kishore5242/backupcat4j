@@ -18,8 +18,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ProgressService {
@@ -34,7 +36,8 @@ public class ProgressService {
     private long totalSize = 1L;
     private long completedSize = 1L;
     private long startTime;
-    private double subPercent = 0.0;
+    //    private double subPercent = 0.0;
+    Map.Entry<String, Double> subPercent = new AbstractMap.SimpleEntry<>("", 0.0);
 
     public List<IndexedFile> start(List<IndexedFile> indexedFiles, BackupOptions backupOptions) throws IOException {
         this.startTime = System.nanoTime();
@@ -55,6 +58,7 @@ public class ProgressService {
         writeResultToFile(result);
         this.totalSize = resumedFiles.stream().mapToLong(IndexedFile::getSize).sum();
         this.completedSize = backupResults.stream().mapToLong(br -> br.getIndexedFile().getSize()).sum();
+        setSubPercent("", 0.0);
     }
 
     public double getProgressPercent() {
@@ -62,12 +66,12 @@ public class ProgressService {
         return totalSize > 0 ? (completedSize * 100.0) / totalSize : 0;
     }
 
-    public void setSubPercent(double percent) {
-        this.subPercent = percent;
+    public Map.Entry<String, Double> getSubPercent() {
+        return subPercent;
     }
 
-    public double getSubPercent() {
-        return this.subPercent;
+    public void setSubPercent(String key, Double value) {
+        this.subPercent = new AbstractMap.SimpleEntry<>(key, value);
     }
 
     public String getRemainingTime() {

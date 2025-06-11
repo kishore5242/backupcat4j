@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -78,6 +79,9 @@ public class BackupController {
 
     @FXML
     private ProgressBar subProgressBar;
+
+    @FXML
+    private Text subProgressName;
 
     @FXML
     private TextArea consoleArea;
@@ -227,7 +231,9 @@ public class BackupController {
             public void run() {
                 progressBar.setProgress(progressService.getProgressPercent() / 100.0);
                 remainingTimeText.setText(progressService.getRemainingTime());
-                subProgressBar.setProgress(progressService.getSubPercent() / 100.0);
+                Map.Entry<String, Double> subPercent = progressService.getSubPercent();
+                subProgressName.setText(subPercent.getKey());
+                subProgressBar.setProgress(subPercent.getValue() / 100.0);
             }
         }, 0, 1000);
     }
