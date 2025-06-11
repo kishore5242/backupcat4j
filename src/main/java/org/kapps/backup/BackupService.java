@@ -36,6 +36,10 @@ public class BackupService {
     private final Path backupOptionsFilePath;
     private final ObjectMapper mapper = new ObjectMapper();
 
+    private volatile boolean paused = false;
+    private volatile boolean stopped = false;
+    private final Object pauseLock = new Object();
+
     @Autowired
     public BackupService(BackupAgentFactory agentFactory, ProgressService progressService,
                          FileIndexer fileIndexer) {
@@ -44,6 +48,29 @@ public class BackupService {
         this.fileIndexer = fileIndexer;
         this.backupOptionsFilePath = Paths.get(System.getProperty("user.dir")).resolve("config/options.json");
         FileUtils.createIfNotExists(this.backupOptionsFilePath);
+    }
+
+    public boolean isPaused() {
+        return paused;
+    }
+
+    public void pause() {
+        logger.info("Pausing, This may take a while...");
+        paused = true;
+    }
+
+    public void resume() {
+        synchronized (pauseLock) {
+            paused = false;
+            pauseLock.notifyAll();
+        }
+    }
+
+    public void stop() {
+        logger.info("Stopping, This may take a while...");
+        stopped = true;
+        // In case it's stuck in pause
+        resume();
     }
 
     public void backupFiles(BackupOptions backupOptions) throws IOException {
@@ -58,9 +85,31 @@ public class BackupService {
 
         List<IndexedFile> pendingIndexedFiles = progressService.start(indexedFiles, backupOptions);
 
+        // reset
+        stopped = false;
+        paused = false;
+
         // Backup
         for (IndexedFile indexedFile : pendingIndexedFiles) {
             try {
+                // stop control
+                if (stopped) {
+                    logger.info("Backup stopped.");
+                    break;
+                }
+                // Pause control
+                synchronized (pauseLock) {
+                    while (paused && !stopped) {
+                        try {
+                            logger.info("Backup paused.");
+                            pauseLock.wait();
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            return;
+                        }
+                    }
+                }
+                // Run / Resume
                 BackupAgent agent = agentFactory.getAgent(indexedFile.getMimeType());
                 BackupResult backupResult = agent.backup(indexedFile, backupOptions);
                 backupResults.add(backupResult);

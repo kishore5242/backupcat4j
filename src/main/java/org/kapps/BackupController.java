@@ -2,6 +2,7 @@ package org.kapps;
 
 import ch.qos.logback.classic.LoggerContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -46,6 +47,12 @@ public class BackupController {
 
     @FXML
     private Button backupButton;
+
+    @FXML
+    private Button pauseButton;
+
+    @FXML
+    private Button stopButton;
 
     @FXML
     private Button destinationButton;
@@ -109,6 +116,11 @@ public class BackupController {
 
         // set default values
         loadDefaultBackupOptions();
+
+        pauseButton.setDisable(true);
+        stopButton.setDisable(true);
+        progressBar.setOpacity(0.2);
+        subProgressBar.setOpacity(0.2);
     }
 
     @FXML
@@ -201,10 +213,6 @@ public class BackupController {
                 .resume(true)
                 .build();
 
-        consoleArea.clear();
-        backupButton.setDisable(true);
-        consoleArea.requestFocus();
-
         // Run backup
         runBackup(backupOptions);
 
@@ -212,16 +220,67 @@ public class BackupController {
         readProgress();
     }
 
+    @FXML
+    void pause(MouseEvent event) {
+        if (!backupService.isPaused()) {
+            pauseButton.setText("Resume");
+            backupService.pause();
+            progressBar.setOpacity(0.2);
+            subProgressBar.setOpacity(0.2);
+        } else {
+            pauseButton.setText("Pause");
+            backupService.resume();
+            progressBar.setOpacity(1);
+            subProgressBar.setOpacity(1);
+        }
+    }
+
+    @FXML
+    void stop(MouseEvent event) {
+        backupService.stop();
+        backupButton.setText("Start");
+        backupButton.setDisable(false);
+        pauseButton.setDisable(true);
+        stopButton.setDisable(true);
+    }
+
     private void runBackup(BackupOptions backupOptions) {
+        consoleArea.clear();
+        consoleArea.requestFocus();
+        backupButton.setDisable(true);
+        pauseButton.setDisable(false);
+        stopButton.setDisable(false);
+        progressBar.setOpacity(1);
+        subProgressBar.setOpacity(1);
         new Thread(() -> {
             try {
                 backupService.backupFiles(backupOptions);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             } finally {
-                backupButton.setDisable(false);
+                Platform.runLater(() -> {
+                    backupButton.setDisable(false);
+                    pauseButton.setDisable(true);
+                    stopButton.setDisable(true);
+                    progressService.reset();
+                    pauseButton.setText("Pause");
+                });
             }
         }).start();
+    }
+
+    private void checkCompletion() {
+        Timer timer = new Timer();
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                progressBar.setProgress(progressService.getProgressPercent() / 100.0);
+                remainingTimeText.setText(progressService.getRemainingTime());
+                Map.Entry<String, Double> subPercent = progressService.getSubPercent();
+                subProgressName.setText(subPercent.getKey());
+                subProgressBar.setProgress(subPercent.getValue() / 100.0);
+            }
+        }, 0, 1000);
     }
 
     private void readProgress() {

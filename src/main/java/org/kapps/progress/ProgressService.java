@@ -110,6 +110,13 @@ public class ProgressService {
         }
     }
 
+    public void reset() {
+        this.indexedFiles = new ArrayList<>();
+        this.resumedFiles = new ArrayList<>();
+        this.completedSize = 0L;
+        this.totalSize = 0L;
+    }
+
     private void writeResultToFile(BackupResult result) throws IOException {
         try (BufferedWriter writer = Files.newBufferedWriter(
                 this.progressFile,
