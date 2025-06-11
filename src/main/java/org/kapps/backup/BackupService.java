@@ -1,10 +1,12 @@
 package org.kapps.backup;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import org.kapps.index.FileIndexer;
 import org.kapps.index.IndexedFile;
-import org.kapps.progress.ProgressTracker;
+import org.kapps.progress.ProgressService;
 import org.kapps.utils.BackupUtils;
+import org.kapps.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -27,21 +31,29 @@ public class BackupService {
     private static final Logger logger = LoggerFactory.getLogger(BackupService.class);
 
     private final BackupAgentFactory agentFactory;
+    private final ProgressService progressService;
+    private final Path backupOptionsFilePath;
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @Autowired
-    public BackupService(BackupAgentFactory agentFactory) {
+    public BackupService(BackupAgentFactory agentFactory, ProgressService progressService) {
         this.agentFactory = agentFactory;
+        this.progressService = progressService;
+        this.backupOptionsFilePath = Paths.get(System.getProperty("user.dir")).resolve("config/options.json");
+        FileUtils.createIfNotExists(this.backupOptionsFilePath);
     }
 
     public void backupFiles(BackupOptions backupOptions) throws IOException {
         Stopwatch sw = Stopwatch.createStarted();
         List<BackupResult> backupResults = new ArrayList<>();
 
+        // save backup options to a file
+        writeBackupOptions(backupOptions);
+
         // Index folders
         List<IndexedFile> indexedFiles = index(backupOptions);
 
-        ProgressTracker progressTracker = new ProgressTracker(indexedFiles);
-        List<IndexedFile> pendingIndexedFiles = progressTracker.getPending(backupOptions);
+        List<IndexedFile> pendingIndexedFiles = progressService.start(indexedFiles, backupOptions);
 
         // Backup
         for (IndexedFile indexedFile : pendingIndexedFiles) {
@@ -49,7 +61,7 @@ public class BackupService {
                 BackupAgent agent = agentFactory.getAgent(indexedFile.getMimeType());
                 BackupResult backupResult = agent.backup(indexedFile, backupOptions);
                 backupResults.add(backupResult);
-                progressTracker.appendResult(backupResult);
+                progressService.addResult(backupResult);
             } catch (Exception e) {
                 logger.error("Failed to back up: {}", indexedFile.getPath(), e);
                 BackupResult errorResult = BackupResult.builder()
@@ -60,9 +72,8 @@ public class BackupService {
                         .message(e.getMessage())
                         .build();
                 backupResults.add(errorResult);
-                progressTracker.appendResult(errorResult);
+                progressService.addResult(errorResult);
             }
-            progressTracker.logProgress(indexedFile);
         }
 
         // index target
@@ -157,6 +168,15 @@ public class BackupService {
             return input.substring(0, length);  // Truncate
         } else {
             return String.format("%-" + length + "s", input);  // Pad with spaces
+        }
+    }
+
+    private void writeBackupOptions(BackupOptions backupOptions) {
+        try {
+            mapper.writeValue(backupOptionsFilePath.toFile(), backupOptions);
+            logger.info("Backup options saved.");
+        } catch (IOException e) {
+            logger.error("Failed to save backup options", e);
         }
     }
 

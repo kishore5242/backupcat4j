@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.kapps.backup.*;
 import org.kapps.index.FileIndexer;
 import org.kapps.index.IndexedFile;
-import org.kapps.progress.ProgressTracker;
+import org.kapps.progress.ProgressService;
 import org.kapps.utils.Directories;
 import org.kapps.utils.FileUtils;
 import org.kapps.utils.TestUtils;
@@ -30,6 +30,9 @@ public class BackupServiceTest {
 
     @Autowired
     BackupService backupService;
+
+    @Autowired
+    ProgressService progressService;
 
     @MockitoBean
     VideoCompressor videoCompressor;
@@ -211,13 +214,13 @@ public class BackupServiceTest {
 
             // Create a last run file
             List<IndexedFile> indexedFiles = FileIndexer.indexFiles(backupOptions);
-            ProgressTracker progressTracker = new ProgressTracker(indexedFiles);
-            progressTracker.reset();
+
+            progressService.start(indexedFiles, backupOptions);
 
             // complete 4 files
             int lastIndex = 4;
             for (int i = 0; i < lastIndex; i++) {
-                progressTracker.appendResult(BackupResult.builder()
+                progressService.addResult(BackupResult.builder()
                         .indexedFile(indexedFiles.get(i))
                         .status(true)
                         .backupAction(BackupAction.BACKUP)

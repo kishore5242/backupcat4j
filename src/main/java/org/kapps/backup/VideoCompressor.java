@@ -1,8 +1,10 @@
 package org.kapps.backup;
 
+import org.kapps.progress.ProgressService;
 import org.kapps.utils.BackupUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
@@ -22,6 +24,9 @@ public class VideoCompressor {
     private static final Logger logger = LoggerFactory.getLogger(VideoCompressor.class);
 
     private static final Set<String> TARGET_CODECS = Set.of("h264", "hevc", "vp9");
+
+    @Autowired
+    private ProgressService progressService;
 
     public boolean isAlreadyCompressed(File inputFile, Map<String, String> metadata, BackupOptions backupOptions) {
         try {
@@ -117,6 +122,8 @@ public class VideoCompressor {
                         String timeStr = matcher.group(1);
                         double processedSeconds = parseTimeToSeconds(timeStr);
                         double percent = (processedSeconds / totalDuration) * 100;
+
+                        progressService.setSubPercent(percent);
 
                         long now = System.currentTimeMillis();
                         double elapsedSeconds = (now - startTimeMillis) / 1000.0;
