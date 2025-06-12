@@ -36,6 +36,7 @@ public class AppFX extends Application {
         stage.getIcons().add(icon);
         stage.setTitle("BackupCat4j");
         stage.setScene(new Scene(root));
+        stage.setResizable(false);
         stage.show();
     }
 
